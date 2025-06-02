@@ -1,0 +1,190 @@
+[build-system]
+requires = ["hatchling", "hatch-requirements-txt"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+# TODO : verify this approach, or try dynamic dependencies import...
+allow-direct-references = true
+
+[project]
+name = "symurbench"
+version = "0.1"
+description = "SyMuRBench: Benchmark for symbolic music representations"
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {file = "LICENSE"}
+requires-python = ">=3.10.0"
+authors = [
+    { name = "PStrepetov" },
+    { name = "DAKovalev" }
+]
+keywords = [
+    "artificial intelligence",
+    "midi",
+    "music",
+    "mir",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Sound/Audio :: MIDI",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+
+dynamic = ["dependencies"]
+#dependencies = []
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["symurbench/requirements.txt"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["symurbench"]
+
+[project.optional-dependencies]
+tests = [
+    "pytest-cov",
+    #"pytest-xdist[psutil]",
+
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx-markdown-builder==0.6.7"
+]
+
+# Ruff setting section
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint]
+extend-select = [
+    "ARG",
+    "A",
+    "ANN",
+    "B",
+    "BLE",
+    "C4",
+    "COM",
+    "D",
+    "E",
+    "EM",
+    "EXE",
+    "F",
+    "FA",
+    "FBT",
+    "G",
+    "I",
+    "ICN",
+    "INP",
+    "INT",
+    "ISC",
+    "N",
+    "NPY",
+    "PERF",
+    "PGH",
+    "PTH",
+    "PIE",
+    # "PL",
+    "PT",
+    "Q",
+    "RET",
+    "RSE",
+    "RUF",
+    "S",
+    # "SLF",
+    "SIM",
+    "T",
+    "TCH",
+    "TID",
+    "UP",
+    "W",
+]
+
+
+# Each rule exclusion should be explained here.
+# By default, we think it is better to select groups of rules (above), and exclude
+# specific problematic rules, instead of selecting specific rules. By doing so, in case
+# the ruff rules groups change, this requires us to check and handle the new rules or
+# changes, making sure we stay up to date and keep the best practices.
+
+# ANN003:
+# Would mostly apply to args/kwargs that are passed to methods from dependencies, for
+# which the signature can change depending on the version. This would either be too
+# difficult to comply and/or would add a lot of noqa exceptions. ANN002 is used as it
+# adds very few "noqa" exceptions, but ANN003 would add too much complexity.
+
+# ANN101 and ANN102:
+# Yields errors for `self` in methods from classes, which is unecessary.
+# The existence of these rules is currently questioned, they are likely to be removed.
+# https://github.com/astral-sh/ruff/issues/4396
+
+# B905
+# The `strict` keyword argument for the `zip` built-in method appeared with Python
+# 3.10. As we support previous versions, we cannot comply (yet) with this rule. The
+# exclusion should be removed when MidiTok drop support for Python 3.9.
+
+# D107
+# We document classes at the class level (D101). This documentation should cover the
+# way classes are initialized. So we do not document `__init__` methods.
+
+# D203
+# "one-blank-line-before-class", incompatible with D211 (blank-line-before-class).
+# We follow PEP 257 and other conventions by preferring D211 over D203.
+
+# D212
+# "multi-line-summary-first-line", incompatible with D213
+# (multi-line-summary-second-line).
+# We follow PEP 257, which recommend to set put the summary line on the second line
+# after the blank line of the opening quotes.
+
+# FBT001 and FBT002
+# Refactoring all the methods to make boolean arguments keyword only would add
+# complexity and could break code of users. It's ok to have booleans as positional
+# arguments with default values. For code redability though, we enable FB003.
+
+# COM812:
+# Yields errors for one-line portions without comma. Trailing commas are automatically
+# set with ruff format anyway. This exclusion could be removed when this behavior is
+# fixed in ruff.
+
+# UP038
+# Recommends to | type union with `isinstance`, which is only supported since Python
+# 3.10. The exclusion should be removed when MidiTok drop support for Python 3.9.
+
+# (ISC001)
+# May cause conflicts when used with the ruff formatter. They recommend to disable it.
+# We leave it enabled but keep this in mind.
+
+ignore = [
+    "ANN003",
+    "ANN101",
+    "ANN102",
+    "B905",
+    "COM812",
+    "D107",
+    "D203",
+    "D212",
+    "FBT001",
+    "FBT002",
+    "UP038",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "ANN201",  # allow no return type hint for pytest methods
+    "D103",  # no need to document pytest methods
+    "S101",  # allow assertions in tests
+    "T201",  # print allowed
+]
+"docs/conf.py" = ["INP001"]  # not a package
