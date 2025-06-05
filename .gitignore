@@ -1,0 +1,8 @@
+.venv
+.vscode
+**/.ipynb_checkpoints
+**/__pycache__/
+**.DS_Store
+
+docs/source/**.rst
+!docs/source/index.rst
