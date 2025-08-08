@@ -77,7 +77,7 @@ class MetricValue:
         self
     ) -> None:
         """
-        Validate name, values, aggregation_type and alpha.
+        Validate name, values, and aggregation_type.
 
         Raises:
             TypeError: if self._name is not a string
