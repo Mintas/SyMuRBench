@@ -43,10 +43,10 @@ dynamic = ["dependencies"]
 #dependencies = []
 
 [tool.hatch.metadata.hooks.requirements_txt]
-files = ["symurbench/requirements.txt"]
+files = ["src/symurbench/requirements.txt"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["symurbench"]
+packages = ["src/symurbench"]
 
 [project.optional-dependencies]
 tests = [
