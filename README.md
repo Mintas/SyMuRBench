@@ -97,7 +97,8 @@ from symurbench.music21_extractor import Music21Extractor
 config = {
     "ComposerClassificationASAP": {
         "metadata_csv_path":"data/datasets/composer_and_retrieval_datasets/metadata_composer_dataset.csv",
-        "files_dir_path":"data/datasets/composer_and_retrieval_datasets/"
+        "files_dir_path":"data/datasets/composer_and_retrieval_datasets/",
+        "automl_config_path":"configs/automl_multiclass_config.yaml"
     }
 }
 
@@ -146,7 +147,7 @@ benchmark = Benchmark.init_from_config_file(
     feature_extractors_list=[m21_pfe]
 )
 benchmark.run_all_tasks()
-benchmark.get_result_df(round_num=3, add_std=True).to_csv("result.csv")
+benchmark.get_result_df(round_num=3, return_ci=True).to_csv("result.csv")
 ```
 
 **Appendix**
