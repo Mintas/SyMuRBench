@@ -14,8 +14,8 @@ readme = {file = "README.md", content-type = "text/markdown"}
 license = {file = "LICENSE"}
 requires-python = ">=3.10.0"
 authors = [
-    { name = "PStrepetov" },
-    { name = "DAKovalev" }
+    {name = "Peter Strepetov" },
+    {name = "Dmitrii Kovalev" }
 ]
 keywords = [
     "artificial intelligence",
