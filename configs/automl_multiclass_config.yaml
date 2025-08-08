@@ -8,7 +8,7 @@ verbose: 1 # "controls the verbosity: the higher, the more messages:
 #>=3 : the hyperparameters optimization process is also displayed; 
 #>=4 : the training process for every algorithm is displayed;"
 
-n_folds: 10 # number of folds for cross-validation
+n_folds: 8 # number of folds for cross-validation
 
 linearLBFGS_params: # parameters for LinearLGBFS LigthAutoML model
   cs:

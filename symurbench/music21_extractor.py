@@ -8,6 +8,15 @@ from .feature_extractor import FeatureExtractor
 
 logger = logging.getLogger("music21 extractor")
 
+categorical_features = {
+    "R31_1": (0, 1, 2, 4, 8, 16, 32, 64, 128), # InitialTimeSignatureFeature (denominator)
+    "P6_0": tuple(range(12)), # IntervalBetweenStrongestPitchClassesFeature
+    "P9_0": tuple(range(13)), # PitchClassVarietyFeature
+    "P16_0": tuple(range(12)) # MostCommonPitchClassFeature
+}
+
+feats2del = ["TX1_0"]
+
 class Music21Extractor(FeatureExtractor):
     """FeatureExtractor Subclass for extracting music21 features from MIDI files."""
     def __init__(
@@ -62,4 +71,16 @@ class Music21Extractor(FeatureExtractor):
             for outer in range(len(columns))
             for i, f in enumerate(features[outer])
         }
+
+        # OHE for categorical features
+        for feat in categorical_features:
+            value = unique_feats[feat]
+            del unique_feats[feat]
+            for cat in categorical_features[feat]:
+                unique_feats[f"{feat}_{cat}"] = 0 if cat != value else 1
+
+        # delete text features
+        for feat in feats2del:
+            del unique_feats[feat]
+
         return np.array(list(unique_feats.values()))
