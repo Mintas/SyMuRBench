@@ -7,6 +7,12 @@ AGGREGATION_FUNC = {
     "std": np.std
 }
 
+Z_ALPHA_OVER_TWO = {
+    0.05: 1.96,
+    0.01: 2.576,
+    0.001: 3.291
+}
+
 class MetricValue:
     """Container for calculated metrics."""
     def __init__(
@@ -71,13 +77,14 @@ class MetricValue:
         self
     ) -> None:
         """
-        Validate name, values and aggregation_type.
+        Validate name, values, and aggregation_type.
 
         Raises:
             TypeError: if self._name is not a string
             TypeError: if self._values is not a list / an empty list
             TypeError: if self._values contains data types other than int and float
             ValueError: if self.aggregation_type not in ("mean", "median")
+            ValueError: if self.alpha not in [0.05, 0.01, 0.001]
         """
         if not isinstance(self._name, str):
             msg = "Name should be a string."
@@ -104,7 +111,7 @@ class MetricValue:
         round_num: int = 2
     ) -> float|int:
         """
-        Return rounded aggregated value for `self.values`.
+        Return a rounded aggregated value for `self.values`.
 
         Args:
             round_num (int, optional):
@@ -119,32 +126,46 @@ class MetricValue:
 
         return round(AGGREGATION_FUNC[self.aggregation_type](self._values), round_num)
 
-    def _get_std(
+    def _get_margin_of_error(
         self,
-        round_num: int = 2
+        round_num: int = 2,
+        alpha: float = 0.05
     ) -> float:
         """
-        Return rounded std for `self.values`.
+        Return a rounded margin of error for `self.values`.
 
         Args:
             round_num (int, optional):
                 The number of decimals to use when rounding the std value.
                 Defaults to 2.
+            alpha (float, optional): the significance level
+                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
+                Defaults to 0.05.
 
         Returns:
-            float: rounded std for values if `self.values` length > 1 else 0.0
+            float: rounded margin of error for values if `self.values` length > 1
+                else 0.0
         """
         if self.is_single_value:
             return 0.0
 
-        return round(AGGREGATION_FUNC["std"](self._values), round_num)
+        if alpha not in Z_ALPHA_OVER_TWO:
+            msg = "Please set alpha to one of these standard values: 0.05, 0.01, 0.001."
+            raise ValueError(msg)
 
-    def _get_agg_std_as_str(
+        std = AGGREGATION_FUNC["std"](self._values)
+        n_folds = len(self._values)
+        moe = Z_ALPHA_OVER_TWO[alpha]
+
+        return round(moe * (std/np.sqrt(n_folds)), round_num)
+
+    def _get_ci_as_str(
         self,
-        round_num: int = 2
+        round_num: int = 2,
+        alpha: float = 0.05
     ) -> str:
         """
-        Return rounded aggregated value with std value as a string.
+        Return a rounded confidence interval as a string.
 
         Result example: `0.522 ± 0.012`.
         If there is only one element in `self.values`,
@@ -152,43 +173,50 @@ class MetricValue:
 
         Args:
             round_num (int, optional):
-                The number of decimals to use when rounding aggregated and std values.
-                Defaults to 3.
+                The number of decimals to use when rounding aggregated value
+                and margin of error. Defaults to 3.
+            alpha (float, optional): the significance level
+                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
+                Defaults to 0.05.
 
         Returns:
-            str: rounded aggregated value with std value as a string
+            str: confidence interval
         """
         value_as_str = str(self._get_agg_value(round_num))
 
         if not self.is_single_value:
-            value_as_str += " ± " + str(self._get_std(round_num))
+            value_as_str += " ± " + str(self._get_margin_of_error(round_num, alpha))
 
         return value_as_str
 
     def get_agg_value(
         self,
         round_num: int = 2,
-        add_std: bool = False
+        return_ci: bool = False,
+        alpha: float = 0.05
     ) -> float|int|str:
         """
-        Return rounded aggregated value.
+        Return a rounded aggregated value or confidence interval.
 
         Unites 2 methods: _get_agg_value and _get_agg_std_as_str.
 
         Args:
             round_num (int, optional):
-                The number of decimals to use when rounding aggregated and std values.
-                Defaults to 3.
-            add_std (bool, optional):
-                If True, std values are added to aggregated values.
-                In that case function returns str object. Float or int otherwise.
-                Defaults to False.
+                The number of decimals to use when rounding aggregated value
+                and margin of error. Defaults to 3.
+            return_ci (bool, optional):
+                If True, the confidence interval is returned, otherwise
+                the aggregated value is returned. If True, the function returns
+                the str object. Float or int otherwise. Defaults to False.
+            alpha (float, optional): the significance level
+                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
+                Defaults to 0.05.
 
         Returns:
-            float|int|str: Aggregated values with/without std.
+            float|int|str: Aggregated values or confidence interval.
         """
-        if add_std:
-            return self._get_agg_std_as_str(round_num)
+        if return_ci:
+            return self._get_ci_as_str(round_num, alpha)
         return self._get_agg_value(round_num)
 
     def __add__(

@@ -2,7 +2,7 @@
 # seed for numpy
 SEED = 42
 # num threads for torch threading and fast feature extraction
-NUM_THREADS = 8
+NUM_THREADS = 4
 
 # csv column names
 TASK_NAME_COLUMN = "task"

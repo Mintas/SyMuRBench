@@ -287,7 +287,8 @@ class Benchmark:
     def get_result_dict(
         self,
         round_num: int = 2,
-        add_std: bool = False
+        return_ci: bool = False,
+        alpha: float = 0.05
     ) -> dict:
         """
         Aggregate self.metrics into a human-readable dict.
@@ -296,9 +297,12 @@ class Benchmark:
             round_num (int, optional):
                 The number of decimals to use when rounding the number.
                 Defaults to 2.
-            add_std (bool, optional):
-                If True, std values are added to aggregated classification metrics.
-                Defaults to False.
+            return_ci (bool, optional):
+                If True, the confidence interval is returned, otherwise
+                the aggregated value is returned. Defaults to False.
+            alpha (float, optional): the significance level
+                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
+                Defaults to 0.05.
 
         Returns:
             dict: dict with the following structure:
@@ -311,7 +315,11 @@ class Benchmark:
         result_dict = {}
         for task, fe, metrics_list in traversal_list:
             current_metrics = {
-                m.name: m.get_agg_value(round_num=round_num,add_std=add_std)
+                m.name: m.get_agg_value(
+                    round_num=round_num,
+                    return_ci=return_ci,
+                    alpha=alpha
+                )
                 for m in metrics_list
             }
             if task not in result_dict: # add task name to dict
@@ -325,7 +333,8 @@ class Benchmark:
     def get_result_df(
         self,
         round_num: int = 2,
-        add_std: bool = False
+        return_ci: bool = False,
+        alpha: float = 0.05
     ) -> pd.DataFrame:
         """
         Aggregate self.metrics into a pandas.DataFrame.
@@ -334,15 +343,22 @@ class Benchmark:
             round_num (int, optional):
                 The number of decimals to use when rounding the number.
                 Defaults to 2.
-            add_std (bool, optional):
-                If True, std values are added to aggregated classification metrics.
-                Defaults to False.
+            return_ci (bool, optional):
+                If True, the confidence interval is returned, otherwise
+                the aggregated value is returned. Defaults to False.
+            alpha (float, optional): the significance level
+                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
+                Defaults to 0.05.
 
         Returns:
             pd.DataFrame: pd.DataFrame with calculated metrics
         """
         traversal_list = utils.nested_dict_to_list(
-            self.get_result_dict(round_num=round_num,add_std=add_std))
+            self.get_result_dict(
+                round_num=round_num,
+                return_ci=return_ci,
+                alpha=alpha
+            ))
         result_dict = {}
 
         for task, fe, name, value in traversal_list:
@@ -361,7 +377,8 @@ class Benchmark:
     def display_result(
         self,
         round_num: int = 2,
-        add_std: bool = False,
+        return_ci: bool = False,
+        alpha: float = 0.05,
         colored: bool = True
     ) -> None:
         """
@@ -371,9 +388,12 @@ class Benchmark:
             round_num (int, optional):
                 The number of decimals to use when rounding the number.
                 Defaults to 2.
-            add_std (bool, optional):
-                If True, std values are added to aggregated classification metrics.
-                Defaults to False.
+            return_ci (bool, optional):
+                If True, the confidence interval is returned, otherwise
+                the aggregated value is returned. Defaults to False.
+            alpha (float, optional): the significance level
+                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
+                Defaults to 0.05.
             colored (bool, optional):
                 If True, highlight the best values with green color
                 and the worst values with red color.
@@ -381,12 +401,13 @@ class Benchmark:
         """
         df = self.get_result_df(
             round_num=round_num,
-            add_std=add_std
+            return_ci=return_ci,
+            alpha=alpha
         )
 
         return utils.display_styler(
             df=df,
             round_num=round_num,
-            std=add_std,
+            ci=return_ci,
             colored=colored
         )

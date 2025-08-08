@@ -81,7 +81,7 @@ def load_yaml(
 def highlight_values(
     s: pd.Series,
     good: bool,
-    std: bool=False
+    ci: bool=False
 ) -> list[str]:
     """Highlight values in dataframe.
 
@@ -90,7 +90,7 @@ def highlight_values(
         good (bool):
             If True, highlight good values with green color,
             otherwise highlight poor values with red color
-        std (bool, optional):
+        ci (bool, optional):
             If True, cell values are considered as strings in format `0.05 ± 0.01`,
             else cell values are considered as floats.
             Defaults to False.
@@ -98,7 +98,7 @@ def highlight_values(
     Returns:
         list[str]: list with bg colors
     """
-    vals = np.array([float(v.split(" ")[0]) for v in s._values]) if std else s._values
+    vals = np.array([float(v.split(" ")[0]) for v in s._values]) if ci else s._values
 
     if True in [v in s.name[1] for v in DEFAULT_METRIC_NAMES_2MINIMIZE]:
         bool_mask = vals == vals.min() if good else vals == vals.max()
@@ -112,7 +112,7 @@ def highlight_values(
 def display_styler(
     df: pd.DataFrame,
     round_num: int = 2,
-    std: bool=False,
+    ci: bool=False,
     colored: bool=True
 ) -> pifs.Styler:
     """
@@ -123,7 +123,7 @@ def display_styler(
         round_num (int):
             The number of decimals to use when rounding the number.
             Defaults to 2.
-        std (bool, optional):
+        ci (bool, optional):
             If True, cell values are considered as strings in format `0.05 ± 0.01`,
             else cell values are considered as floats.
             Defaults to False.
@@ -151,13 +151,13 @@ def display_styler(
             s: pd.Series
         ) -> list[str]:
             """Highlight poor metrics with red."""
-            return highlight_values(s=s, good=False, std=std)
+            return highlight_values(s=s, good=False, ci=ci)
 
         def highlight_good(
             s: pd.Series
         ) -> list[str]:
             """Highlight good metrics with green."""
-            return highlight_values(s=s, good=True, std=std)
+            return highlight_values(s=s, good=True, ci=ci)
 
         styler.apply(highlight_poor).apply(highlight_good)
 
