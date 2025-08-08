@@ -9,7 +9,7 @@ from .feature_extractor import FeatureExtractor
 logger = logging.getLogger("music21 extractor")
 
 categorical_features = {
-    "R31_1": (0, 1, 2, 4, 8, 16, 32, 64, 128), # InitialTimeSignatureFeature (denominator)
+    "R31_1": (0, 1, 2, 4, 8, 16, 32, 64, 128), # InitialTimeSignatureFeature (denom)
     "P6_0": tuple(range(12)), # IntervalBetweenStrongestPitchClassesFeature
     "P9_0": tuple(range(13)), # PitchClassVarietyFeature
     "P16_0": tuple(range(12)) # MostCommonPitchClassFeature
