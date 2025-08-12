@@ -8,9 +8,9 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from . import utils
 from .constant import MIDI_FILE_COLUMN, NUM_THREADS, TASK_NAME_COLUMN
 from .metaloaders.metaloader import MetaDataset
+from .utils import embs_and_labels_to_df, validate_file_paths
 
 logger = logging.getLogger("feature extractor")
 
@@ -128,7 +128,7 @@ class FeatureExtractor(ABC):
                 Shape: (len(file_paths), n_features);
                 DataFrame do not contain header or index column
         """
-        utils.validate_file_paths(file_paths)
+        validate_file_paths(file_paths)
         features = self._extract_features_from_files(file_paths)
         if len(features.shape) != 2:
             msg = "Features should contain at least 2 vectors."
@@ -160,7 +160,7 @@ class FeatureExtractor(ABC):
         """
         features = self.extract_features_from_files(meta_dataset.paths_to_files)
         if hasattr(meta_dataset, "labels"):
-            df = utils.embs_and_labels_to_df(features, meta_dataset.labels)
+            df = embs_and_labels_to_df(features, meta_dataset.labels)
         else:
             df = pd.DataFrame(features)
         log_msg = f"Features shape for {task_name} task is {features.shape}"
@@ -479,7 +479,7 @@ class PersistentFeatureExtractor:
             )
 
         if hasattr(meta_dataset, "labels"):
-            df = utils.embs_and_labels_to_df(features, meta_dataset.labels)
+            df = embs_and_labels_to_df(features, meta_dataset.labels)
         else:
             df = pd.DataFrame(features)
 

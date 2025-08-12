@@ -14,11 +14,31 @@ class RetrievalTask(AbsTask):
 
     def __init__(
         self,
+        metaloader_args_dict: dict,
         scorer: BaseScorer,
         postfixes: tuple[str, str] = ("sp", "ps")
     ) -> None:
-        """Task initialization. Prepare dataset for feature extraction."""
-        super().__init__()
+        """
+        Initialize the task and prepare the dataset for feature extraction.
+
+        Args:
+            metaloader_args_dict (dict):
+                Dictionary of arguments passed to the metaloader constructor.
+                Expected keys:
+                - metadata_csv_path (str):
+                Absolute path to the CSV file containing dataset metadata.
+                - files_dir_path (str):
+                Absolute path to the directory containing dataset files.
+                - dataset_filter_list (list[str], optional):
+                List of filenames to include (inclusion filter).
+            scorer (BaseScorer):
+                The scorer instance used to compute evaluation metrics.
+            postfixes (tuple[str, str], optional): A pair of string postfixes used to
+                distinguish metrics computed in different directions (e.g., "sp" for
+                score-performance and "ps" for performance-score). Defaults to
+                ("sp", "ps").
+        """
+        super().__init__(metaloader_args_dict)
         self.scorer = scorer
         self.postfixes = postfixes
 

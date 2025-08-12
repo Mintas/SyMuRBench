@@ -21,16 +21,29 @@ class ClassificationTask(AbsTask):
 
     def __init__(
         self,
+        metaloader_args_dict: dict,
         automl_config_path: str, # relative path to YAML file with AutoML config
         scorer: BaseScorer
     ) -> None:
-        """Task initialization. Prepare dataset for feature extraction.
+        """
+        Initialize the task and prepare the dataset for feature extraction.
 
         Args:
-            automl_config_path (str): path to YAML file with AutoML config
-            scorer (BaseScorer): scorer to use for metrics calculation.
+            metaloader_args_dict (dict):
+                Dictionary of arguments passed to the metaloader constructor.
+                Expected keys:
+                - metadata_csv_path (str):
+                Absolute path to the CSV file containing dataset metadata.
+                - files_dir_path (str):
+                Absolute path to the directory containing dataset files.
+                - dataset_filter_list (list[str], optional):
+                List of filenames to include (inclusion filter).
+            automl_config_path (str):
+                Path to the YAML configuration file for AutoML.
+            scorer (BaseScorer):
+                The scorer instance used to compute evaluation metrics.
         """
-        super().__init__()
+        super().__init__(metaloader_args_dict)
         self.automl_config_path = automl_config_path
         self.scorer = scorer
 
@@ -96,7 +109,8 @@ class ClassificationTask(AbsTask):
                 If False, use features as they are.
 
         Returns:
-            list[MetricValue]: List of MetricValue objects (for each calculated metric).
+            list[MetricValue]:
+                List of MetricValue objects (for each calculated metric).
                 Each object has an unique name.
         """
         automl = self.init_automl(preprocess_features)
@@ -136,7 +150,8 @@ class ClassificationTask(AbsTask):
                 FeatureExtractor or PersistentFeatureExtractor object
 
         Returns:
-            list[MetricValue]: List of MetricValue objects (for each calculated metric).
+            list[MetricValue]:
+                List of MetricValue objects (for each calculated metric).
                 Each object should have unique name.
 
         """

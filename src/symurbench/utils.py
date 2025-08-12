@@ -6,8 +6,14 @@ import numpy as np
 import pandas as pd
 import pandas.io.formats.style as pifs
 import yaml
+from huggingface_hub import hf_hub_download
 
-from .constant import DEFAULT_METRIC_NAMES_2MINIMIZE, TARGET_COLUMN
+from .constant import (
+    DATASETS_CONFIG_PATH,
+    DEFAULT_METRIC_NAMES_2MINIMIZE,
+    HF_DATASET_REPO,
+    TARGET_COLUMN,
+)
 
 
 def embs_and_labels_to_df(
@@ -76,7 +82,7 @@ def load_yaml(
         raise ValueError(msg)
 
     with Path.open(Path(yaml_path)) as file:
-        return yaml.load(file, Loader=yaml.SafeLoader)
+        return yaml.safe_load(file)
 
 def highlight_values(
     s: pd.Series,
@@ -184,3 +190,83 @@ def nested_dict_to_list(x: dict) -> list:
                 result.append((*path, key, value))
     traverse(x, [])
     return result
+
+def load_datasets(
+    output_folder: str | Path = "./",
+    load_features: bool = True,
+    token: str | None = None
+) -> None:
+    """
+    Download and extract datasets and precomputed features from Hugging Face Hub.
+
+    This function:
+    - Downloads a zip archive containing dataset metadata and structure.
+    - Extracts it to the specified output folder.
+    - Optionally downloads and saves precomputed music21 and jSymbolic features.
+    - Updates the local datasets configuration file with resolved absolute paths.
+
+    Args:
+        output_folder (str | Path, optional): Directory where datasets and features
+            will be extracted. Created if it does not exist. Defaults to "./".
+        load_features (bool, optional): Whether to download and save precomputed
+            feature files (music21 and jSymbolic). Defaults to True.
+        token (str, optional): Authentication token for accessing private or gated
+            repositories on Hugging Face Hub. Defaults to None.
+    """
+    datasets = hf_hub_download(
+        repo_id=HF_DATASET_REPO,
+        subfolder="data",
+        filename="datasets.zip",
+        repo_type="dataset",
+        token=token
+    )
+
+    import zipfile
+    extract_path = Path(output_folder)
+    if not extract_path.exists():
+        extract_path.mkdir()
+    with zipfile.ZipFile(datasets, "r") as zip_ref:
+        zip_ref.extractall(extract_path)
+
+    logging.info("Datasets extraction finished.")
+
+
+    if load_features:
+        music21_feats_path = hf_hub_download(
+            repo_id=HF_DATASET_REPO,
+            subfolder="data/features",
+            filename="music21_full_dataset.parquet",
+            repo_type="dataset",
+            token=token
+        )
+
+        jsymbolic_feats_path = hf_hub_download(
+            repo_id=HF_DATASET_REPO,
+            subfolder="data/features",
+            filename="jsymbolic_full_dataset.parquet",
+            repo_type="dataset",
+            token=token
+        )
+
+        music21_df = pd.read_parquet(music21_feats_path)
+        jsymbolic_df = pd.read_parquet(jsymbolic_feats_path)
+
+        features_path = extract_path / "features"
+        if not features_path.exists():
+            features_path.mkdir()
+        music21_df\
+            .to_parquet(features_path / "music21_full_dataset.parquet", index=False)
+        jsymbolic_df\
+            .to_parquet(features_path / "jsymbolic_full_dataset.parquet", index=False)
+
+        logging.info("Finished loading features.")
+
+
+    default_tasks_config = load_yaml(DATASETS_CONFIG_PATH)
+    for task in default_tasks_config:
+        for k,v in default_tasks_config[task].items():
+            default_tasks_config[task][k] = str(
+                extract_path.resolve() / Path("/".join(v.split("/")[-3:]))
+            )
+    with Path.open(DATASETS_CONFIG_PATH, "w") as file:
+        yaml.dump(default_tasks_config, file)

@@ -1,0 +1,54 @@
+task: 
+  name: multiclass #type of LightAutoML Task object
+
+verbose: 1 # "controls the verbosity: the higher, the more messages: 
+#<1 : messages are not displayed; 
+#>=1 : the computation process for layers is displayed; 
+#>=2 : the information about folds processing is also displayed; 
+#>=3 : the hyperparameters optimization process is also displayed; 
+#>=4 : the training process for every algorithm is displayed;"
+
+n_folds: 8 # number of folds for cross-validation
+
+linearLBFGS_params: # parameters for LinearLGBFS LigthAutoML model
+  cs:
+  - 1.0e-05
+  - 0.0001
+  - 0.001
+  - 0.01
+  - 0.1
+  - 1.0
+  - 10
+  - 100
+  - 1000
+  - 10000
+  - 100000
+
+# parameters for LinearFeatures pipeline from LightAutoML
+# default values are taken from default config for TabularAutoML
+linearFeatures_params:
+  # max number of categories to generate intersections
+  top_intersections: 4
+  # max depth of cat intersection
+  # subsample to calc data statistics
+  subsample: 100000
+  auto_unique_co: 50
+  # n_classes to use target encoding for multiclass task
+  multiclass_te_co: 3
+  # use groupby features
+  use_groupby: False
+  # groupby types used in feature engineering
+  groupby_types: [ 'delta_median', 'delta_mean', 'min', 'max', 'std', 'mode', 'is_mode' ]
+  # top features are chosen by cardinality or feature importance
+  groupby_top_based_on: 'cardinality'
+  # top categorical features to use in groupby transformer
+  groupby_top_categorical: 3
+  # top numerical features to use in groupby transformer
+  groupby_top_numerical: 3
+  # list of groupby triplets ("group_col", "feat", "groupby_type") for manual setting
+  # disables groupby_types, groupby_top_based_on and other groupby parameters if defined
+  groupby_triplets: [ ]
+
+# define roles of data columns
+roles:
+  target: target

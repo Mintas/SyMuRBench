@@ -21,20 +21,37 @@ SyMuRBench is a versatile benchmark designed to compare vector representations o
 
 As an example we provide precomputed music21 and jSymbolic2 features. Also we provide FeatureExtractor for music21 in music21_extractor.py
 
-**4. Basic usage examples.**
+**4. Installation.**
 
-*Default configs for datasets and AutoML configs are placed in `/configs` folder.*
+Firstly, install the symurbench library using pip:
+
+```
+pip install symurbench
+```
+
+Then load datasets from huggingface:
+
+```
+from symurbench.utils import load_datasets
+
+
+output_folder = "symurbench_data"
+load_datasets(
+    output_folder=output_folder, # Absolute or relative path to the target folder. The dataset and features will be extracted here. 
+    load_features=True, # Whether do download precomputed music21 and jsymbolic features.
+)
+```
+
+Thats all, now you can run the benchmark, here is an example with precomputed features:
 
 **Example 1:** Executing the benchmark using precomputed features for the tasks "ComposerClassificationASAP" and "ScorePerformanceRetrievalASAP."
 
-By default, if no specific tasks are specified, the benchmark will run all tasks.
 ```
-
 from symurbench.benchmark import Benchmark
 from symurbench.feature_extractor import PersistentFeatureExtractor
 
-path_to_music21_features = "data/features/music21_full_dataset.parquet"
-path_to_jsymbolic_features = "data/features/jsymbolic_full_dataset.parquet"
+path_to_music21_features = "symurbench_data/features/music21_full_dataset.parquet"
+path_to_jsymbolic_features = "symurbench_data/features/jsymbolic_full_dataset.parquet"
 
 m21_pfe = PersistentFeatureExtractor(
     persistence_path=path_to_music21_features,
@@ -49,56 +66,34 @@ jsymb_pfe = PersistentFeatureExtractor(
 
 benchmark = Benchmark(
     feature_extractors_list=[m21_pfe, js_pfe],
-    tasks=[
+    tasks=[ # By default, if no specific tasks are specified, the benchmark will run all tasks.
         "ComposerClassificationASAP",
         "ScorePerformanceRetrievalASAP"
     ]
 )
 
 benchmark.run_all_tasks()
-benchmark.display_result()
-```
-Result:
-
-![result](docs/example.png "result")
-
-**Example 2:** Executing the benchmark, computing features, and saving them to a file.
-```
-from symurbench.benchmark import Benchmark
-from symurbench.feature_extractor import PersistentFeatureExtractor
-from symurbench.music21_extractor import Music21Extractor
-
-path_to_music21_features = "data/features/music21_full_dataset.parquet"
-
-m21_pfe = PersistentFeatureExtractor(
-    feature_extractor=Music21Extractor(),
-    persistence_path=path_to_music21_features,
-    use_cached=False,
-    name="music21"
-)
-
-benchmark = Benchmark(
-    feature_extractors_list=[m21_pfe],
-    tasks=[
-        "ComposerClassificationASAP",
-        "ScorePerformanceRetrievalASAP"
-    ]
-)
-
-benchmark.run_all_tasks()
-benchmark.display_result()
+benchmark.display_result(return_ci=True, alpha=0.05)
 ```
 
-**Example 3:** Executing the benchmark using a config
+
+**4. Basic usage examples.**
+
+
+**Example 2:** Executing the benchmark using a config
 ```
 from symurbench.benchmark import Benchmark
 from symurbench.music21_extractor import Music21Extractor
+from symurbench.constant import DEFAULT_LAML_CONFIG_PATHS # dict with paths to AutoML configs
+
+multiclass_task_automl_cfg_path = DEFAULT_LAML_CONFIG_PATHS["multiclass"]
+print(f"AutoML config path: {multiclass_task_automl_cfg_path}")
 
 config = {
     "ComposerClassificationASAP": {
         "metadata_csv_path":"data/datasets/composer_and_retrieval_datasets/metadata_composer_dataset.csv",
         "files_dir_path":"data/datasets/composer_and_retrieval_datasets/",
-        "automl_config_path":"configs/automl_multiclass_config.yaml"
+        "automl_config_path":multiclass_task_automl_cfg_path
     }
 }
 
@@ -112,23 +107,24 @@ benchmark.run_all_tasks()
 benchmark.display_result()
 ```
 
-**Example 4:** Executing the benchmark using a YAML file containing the configuration.
+**Example 3:** Executing the benchmark using a YAML file containing the configuration.
 ```
 from symurbench.benchmark import Benchmark
 from symurbench.music21_extractor import Music21Extractor
+from symurbench.constant import DATASETS_CONFIG_PATH # path to config with datasets paths
 
-config_path = "configs/tasks_config.yaml"
+print(f"Datasets config path: {DATASETS_CONFIG_PATH}")
 
 m21_fe = Music21Extractor()
 
 benchmark = Benchmark.init_from_config_file(
     feature_extractors_list=[m21_fe],
-    tasks_config_path=config_path
+    tasks_config_path=DATASETS_CONFIG_PATH
 )
 benchmark.run_all_tasks()
 benchmark.display_result()
 ```
-**Example 5:** Saving the results in a pandas DataFrame and exporting it to a CSV file.
+**Example 4:** Saving the results in a pandas DataFrame and exporting it to a CSV file.
 ```
 
 from symurbench.benchmark import Benchmark

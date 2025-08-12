@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "hatch-requirements-txt"]
+requires = ["hatchling"]#, "hatch-requirements-txt"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
@@ -8,7 +8,7 @@ allow-direct-references = true
 
 [project]
 name = "symurbench"
-version = "0.1"
+version = "0.1.2.4.7"
 description = "SyMuRBench: Benchmark for symbolic music representations"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {file = "LICENSE"}
@@ -38,15 +38,27 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "scikit-learn==1.7.1",
+    "pandas==2.2.2",
+    "numpy==1.26.4",
+    "LightAutoML==0.4.1",
+    "tqdm",
+    "music21==9.1.0",
+    "pyarrow"
+]
 
-dynamic = ["dependencies"]
-#dependencies = []
-
-[tool.hatch.metadata.hooks.requirements_txt]
-files = ["src/symurbench/requirements.txt"]
+#[tool.hatch.metadata.hooks.requirements_txt]
+#files = ["src/symurbench/requirements.txt"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/symurbench"]
+
+#[tool.hatch.build.targets.sdist]
+#include = [
+#  "src/symurbench/default_configs/*.yaml",
+#  "src"
+#]
 
 [project.optional-dependencies]
 tests = [

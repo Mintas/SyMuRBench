@@ -12,29 +12,47 @@ logger = logging.getLogger("feature extractor")
 
 class AbsTask(ABC):
     """
-    Abstract Base Class for tasks.
+    Abstract base class for benchmark tasks.
 
-    This class provides an API interface for implementing tasks.
+    This class defines the interface for implementing evaluation tasks.
+    Subclasses must implement the core methods to extract features and compute metrics.
 
-    Users can create their own subclass and implement
-    the following methods:
-    - `calculate_metrics` method to calculate metrics for features (and labels).
-    - 'run` method to extract features and calculate metrics for them.
+    To create a custom task, users should:
+        - Implement `calculate_metrics` to compute evaluation metrics
+        from features and labels.
+        - Implement `run` to execute feature extraction and metric computation.
 
-    Parameters:
-        metadata (BaseMetaLoader): BaseMetaLoader instance with metadata
-        name (str): name of the task
-        description (str): description of the task
+    Args:
+        name (str): Name of the task.
+        description (str): Description of the task.
+        metaloader (BaseMetaLoader):
+            The metadata loader class (not instance) to be instantiated
+            for loading dataset metadata and file paths.
     """
-    metadata: BaseMetaLoader
     name: str
     description: str = ""
+    metaloader: BaseMetaLoader
 
     def __init__(
-        self
+        self,
+        metaloader_args_dict: dict
     ) -> None:
-        """Task initialization. Prepare metadata for feature extraction."""
-        self.meta_dataset = self.metadata.load_dataset()
+        """
+        Initialize the task and prepare metadata for feature extraction.
+
+        Args:
+            metaloader_args_dict (dict):
+                Dictionary of arguments passed to the metaloader constructor.
+                Expected keys:
+                - metadata_csv_path (str):
+                Absolute path to the CSV file containing dataset metadata.
+                - files_dir_path (str):
+                Absolute path to the directory containing dataset files.
+                - dataset_filter_list (list[str], optional):
+                List of filenames to include (inclusion filter).
+        """
+        self.metaloader = self.metaloader(**metaloader_args_dict)
+        self.meta_dataset = self.metaloader.load_dataset()
 
     @abstractmethod
     def calculate_metrics(
@@ -42,17 +60,20 @@ class AbsTask(ABC):
         data: pd.DataFrame
     ) -> list[MetricValue]:
         """
-        Calculate metrics for extracted features.
+        Calculate metrics for the extracted features.
 
         Args:
             data (pd.DataFrame):
-                dataframe with features and labels (or only with features)
-                For classification tasks, target columns
-                should be predefined in AutoML config.
+                Input dataframe containing extracted features,
+                and optionally labels. For classification tasks,
+                the target (label) columns must be specified
+                in the AutoML configuration.
 
         Returns:
-            list[MetricValue]: List of MetricValue objects (for each calculated metric).
-                Each object has an unique name.
+            list[MetricValue]:
+                A list of `MetricValue` objects, one for each computed metric.
+                Each object contains a unique metric name
+                and the corresponding value(s).
         """
         raise NotImplementedError
 
@@ -61,16 +82,18 @@ class AbsTask(ABC):
         feature_extractor: FeatureExtractor | PersistentFeatureExtractor
     ) -> list[MetricValue]:
         """
-        Launch task for provided feature extractor.
+        Run the task using the provided feature extractor.
 
         Args:
             feature_extractor (FeatureExtractor | PersistentFeatureExtractor):
-                FeatureExtractor or PersistentFeatureExtractor object
+                The feature extractor instance used to extract
+                features from the dataset. Can be a regular `FeatureExtractor`
+                or a `PersistentFeatureExtractor` that caches results to disk.
 
         Returns:
-            list[MetricValue]: List of MetricValue objects (for each calculated metric).
-                Each object should have an unique name.
-
+            list[MetricValue]:
+                A list of `MetricValue` objects, one for each computed metric.
+                Each object has a unique name and the corresponding metric value(s).
         """
         df = feature_extractor.get_features_with_labels(
             task_name=self.name,
@@ -81,38 +104,31 @@ class AbsTask(ABC):
     @classmethod
     def pass_args(
         cls,
-        metadata_csv_path: str | None = None,
-        files_dir_path: str | None = None,
+        metadata_csv_path: str,
+        files_dir_path: str,
         dataset_filter_list: list[str] | None = None,
         **kwargs
     ) -> None:
         """
-        Pass arguments for metadata or for __init__.
+        Pass arguments for metadata loading or for subclass initialization.
 
         Args:
-            metadata_csv_path (str, optional):
-                BaseMetaLoader parameter,
-                absolute path to CSV file with metadata (filenames, class labels).
-                Defaults to None.
-            files_dir_path (str, optional):
-                BaseMetaLoader parameter,
-                absolute path to folder with MIDI files.
-                Defaults to None.
+            metadata_csv_path (str): Absolute path to the CSV file containing metadata
+                (e.g., filenames, class labels). Used by BaseMetaLoader.
+            files_dir_path (str): Absolute path to the directory containing MIDI files.
+                Used by BaseMetaLoader.
             dataset_filter_list (list[str] | None, optional):
-                BaseMetaLoader parameter,
-                list with files for inclusion filtering (optional).
-                Defaults to None.
-            **kwargs (dict): dict with __init__ method arguments
+                List of filenames to include (applies inclusion filtering).
+                If None, no filtering is applied. Defaults to None.
+            **kwargs (dict):
+                Additional keyword arguments passed to the `__init__` method
+                of the subclass. These may include parameters specific
+                to the subclass's behavior.
         """
-        if metadata_csv_path is None:
-            metadata_csv_path = cls.metadata.metadata_csv_path
-        if files_dir_path is None:
-            files_dir_path = cls.metadata.files_dir_path
-
-        cls.metadata = cls.metadata.__class__(
-            metadata_csv_path=metadata_csv_path,
-            files_dir_path=files_dir_path,
-            dataset_filter_list=dataset_filter_list
-        )
-        return cls(**kwargs)
+        metaloader_args_dict = {
+            "metadata_csv_path": metadata_csv_path,
+            "files_dir_path": files_dir_path,
+            "dataset_filter_list": dataset_filter_list
+        }
+        return cls(metaloader_args_dict, **kwargs)
 
