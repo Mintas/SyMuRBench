@@ -6,7 +6,7 @@ from music21.features.base import allFeaturesAsList, extractorsById
 
 from .feature_extractor import FeatureExtractor
 
-logger = logging.getLogger("music21 extractor")
+logger = logging.getLogger(__name__)
 
 categorical_features = {
     "R31_1": (0, 1, 2, 4, 8, 16, 32, 64, 128), # InitialTimeSignatureFeature (denom)

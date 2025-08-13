@@ -8,7 +8,7 @@ from symurbench.feature_extractor import FeatureExtractor, PersistentFeatureExtr
 from symurbench.metaloaders.metaloader import BaseMetaLoader
 from symurbench.metrics.metric_value import MetricValue
 
-logger = logging.getLogger("feature extractor")
+logger = logging.getLogger(__name__)
 
 class AbsTask(ABC):
     """

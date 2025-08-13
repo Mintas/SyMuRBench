@@ -1,8 +1,8 @@
 """Benchmark class implementtion."""
 import logging
-
 import numpy as np
 import pandas as pd
+import sys
 import torch
 
 from . import utils
@@ -13,8 +13,30 @@ from .constant import NUM_THREADS, SEED
 from .feature_extractor import FeatureExtractor, PersistentFeatureExtractor
 from .tasks import *  # noqa: F403
 
-logging.basicConfig(level=logging.NOTSET)
-logger = logging.getLogger("benchmark")
+def setup_logging(level=logging.INFO):
+    # clean up any existing handlers
+    logging.getLogger().handlers.clear()
+    logging.getLogger().setLevel(logging.DEBUG)
+
+    # avoid duplicate logs
+    logging.getLogger("lightautoml").propagate = True
+
+    #formatter
+    formatter = logging.Formatter(
+        fmt="[%(asctime)s] %(levelname)-7s | %(message)s",
+        datefmt='%H:%M:%S'
+    )
+
+    # handler
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    handler.setLevel(level)
+
+    # add to root
+    logging.getLogger().addHandler(handler)
+
+setup_logging()
+logger = logging.getLogger(__name__)
 np.random.seed(SEED)  # noqa: NPY002
 torch.manual_seed(SEED)
 torch.set_num_threads(NUM_THREADS)
@@ -42,7 +64,7 @@ class Benchmark:
         self.validate_feature_extractors()
         self.tasks = self.validate_tasks_argument(tasks)
 
-        log_msg = f"Metadata is loaded for {len(self.tasks)} tasks."
+        log_msg = f"Metadata is loaded for {len(self.tasks)} task(s)."
         logger.info(log_msg)
 
         # dict where calculated metrics are saved

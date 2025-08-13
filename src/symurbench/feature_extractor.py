@@ -12,7 +12,7 @@ from .constant import MIDI_FILE_COLUMN, NUM_THREADS, TASK_NAME_COLUMN
 from .metaloaders.metaloader import MetaDataset
 from .utils import embs_and_labels_to_df, validate_file_paths
 
-logger = logging.getLogger("feature extractor")
+logger = logging.getLogger(__name__)
 
 class FeatureExtractor(ABC):
     """
