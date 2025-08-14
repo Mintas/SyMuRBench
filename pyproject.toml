@@ -179,3 +179,5 @@ ignore = [
     "FBT002",
     "UP038",
 ]
+
+"docs/conf.py" = ["INP001"]  # not a package
