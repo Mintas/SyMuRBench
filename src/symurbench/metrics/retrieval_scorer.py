@@ -9,27 +9,26 @@ from .scorer import BaseScorer
 
 
 class RetrievalScorer(BaseScorer):
-    """
-    Class for calculating retrieval metrics.
+    """Class for calculating retrieval metrics.
 
-    User can configure tuple of ranks
-    to define retrieval metrics to use.
+    This class allows users to configure a tuple of ranks
+    to specify which retrieval metrics to compute, such as R@k.
     """
-
     def __init__(
         self,
         ranks: tuple[int] | None = DEFAULT_RETRIEVAL_RANKS
     ) -> None:
-        """
-        Initialize the Scorer class.
+        """Initialize the Scorer class.
 
         Args:
             ranks (set[int], optional):
-                a set of ranks to calculate for retrieval task.
+                Set of rank cutoffs at which to compute retrieval metrics.
+                Each rank corresponds to a top-k cutoff.
                 Defaults to DEFAULT_RETRIEVAL_RANKS.
 
         Raises:
-            ValueError: if min(ranks) <= 0 or max(ranks) >= 100
+            ValueError:
+                if min(ranks) <= 0 or max(ranks) >= 100
         """
         self.ranks = ranks
         self.validate_ranks()
@@ -37,11 +36,10 @@ class RetrievalScorer(BaseScorer):
     def validate_ranks(
         self
     ) -> None:
-        """
-        Validate self.ranks.
+        """Validate the ranks used for metric calculation.
 
         Raises:
-            ValueError: if min(self.ranks) <= 0 or max(self.ranks) >= 100
+            ValueError: If min(ranks) <= 0 or max(ranks) >= 100
         """
         if self.ranks is None:
             self.ranks = []
@@ -58,18 +56,20 @@ class RetrievalScorer(BaseScorer):
         y_true: np.ndarray,
         preds: np.ndarray,
     ) -> list[MetricValue]:
-        """
-        Calculate metrics for the task.
+        """Calculate retrieval metrics for the given predictions.
 
         Args:
             y_true (list | np.ndarray):
-                np.array with indices of vectors in the initial order.
+                Array of ground truth indices representing the correct order
+                or relevant items.
             preds (list | np.ndarray):
-                np.array with indices of sorted objects.
+                Array of predicted indices representing the ranked items.
 
         Returns:
-            list[MetricValue]: List of MetricValue objects (for each calculated metric).
-                Each object should have unique name.
+            list[MetricValue]:
+                List of MetricValue objects.
+                Each object has a unique name corresponding to the metric
+                and retrieval direction (e.g., 'R@5_sp').
         """
         metrics_dict = compute_metrics(
             gt_indices=y_true,

@@ -12,8 +12,11 @@ NUM_THREADS = 4
 # csv column names
 TASK_NAME_COLUMN = "task"
 MIDI_FILE_COLUMN = "midi_file"
-MIDI_SCORE_COLUMN = "midi_score"
-MIDI_PERFORMANCE_COLUMN = "midi_performance"
+MIDI_PATH_METADATA_COLUMNS = [
+    "midi_file",
+    "midi_score",
+    "midi_performance"
+]
 TARGET_COLUMN = "target"
 
 # paths to the LightAutoML YAML configuration files (for classification tasks only)

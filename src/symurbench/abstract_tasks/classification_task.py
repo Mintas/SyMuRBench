@@ -17,7 +17,12 @@ from .abstask import AbsTask
 
 
 class ClassificationTask(AbsTask):
-    """A class for evaluating FeatureExtractor on a classification task."""
+    """Evaluator class for assessing the performance on a classification task.
+
+    This class facilitates training and evaluating a classifier using features
+    extracted by a given `FeatureExtractor` or `PersistentFeatureExtractor`.
+    It handles feature preprocessing, model training, and metric computation.
+    """
 
     def __init__(
         self,
@@ -52,19 +57,21 @@ class ClassificationTask(AbsTask):
         preprocess_features: bool,
     ) -> tuple[AutoML, dict, int]:
         """
-        Initialize automl model.
+        Initialize the AutoML model.
 
         Args:
-            preprocess_features (bool): whether to preprocess features.
-                If True, preprocess features according to automl config.
-                If False, use features as they are.
-
-        Raises:
-            ValueError: if config at self.automl_config_path is None
+            preprocess_features (bool): Whether to preprocess the input features.
+                If True, features are preprocessed according to the AutoML
+                configuration. If False, features are used as-is without preprocessing.
 
         Returns:
-            tuple[AutoML, dict, int]:
-                AutoML object, dict with roles, verbose parameter
+            tuple[AutoML, dict, int]: A tuple containing:
+                - The initialized AutoML model object.
+                - A dictionary specifying data roles (e.g., 'target', 'features').
+                - The verbosity level (int) for logging control.
+
+        Raises:
+            ValueError: If the configuration at `self.automl_config_path` is None.
         """
         config = load_yaml(self.automl_config_path)
 
@@ -103,15 +110,15 @@ class ClassificationTask(AbsTask):
 
         Args:
             data (pd.DataFrame):
-                dataframe with features and labels (or only with features)
-            preprocess_features (bool): whether to preprocess features.
-                If True, preprocess features according to automl config.
-                If False, use features as they are.
+                Input dataframe containing features and labels.
+            preprocess_features (bool): Whether to preprocess the features.
+                If True, applies preprocessing as defined in the AutoML configuration.
+                If False, uses the features in their raw form.
 
         Returns:
             list[MetricValue]:
-                List of MetricValue objects (for each calculated metric).
-                Each object has an unique name.
+                A list of MetricValue objects, one for each calculated metric.
+                Each object has a unique name and the corresponding metric value(s).
         """
         automl = self.init_automl(preprocess_features)
         predictions = automl["automl"].fit_predict(
@@ -143,17 +150,18 @@ class ClassificationTask(AbsTask):
         feature_extractor: FeatureExtractor | PersistentFeatureExtractor,
     ) -> list[MetricValue]:
         """
-        Launch classification task for provided feature extractor.
+        Run the task using the provided feature extractor.
 
         Args:
             feature_extractor (FeatureExtractor | PersistentFeatureExtractor):
-                FeatureExtractor or PersistentFeatureExtractor object
+                The feature extractor instance used to extract
+                features from the dataset. Can be a regular `FeatureExtractor`
+                or a `PersistentFeatureExtractor` that caches results to disk.
 
         Returns:
             list[MetricValue]:
-                List of MetricValue objects (for each calculated metric).
-                Each object should have unique name.
-
+                A list of `MetricValue` objects, one for each computed metric.
+                Each object has a unique name and the corresponding metric value(s).
         """
         df = feature_extractor.get_features_with_labels(
             task_name=self.name,

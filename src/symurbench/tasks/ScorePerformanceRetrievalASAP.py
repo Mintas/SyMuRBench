@@ -1,7 +1,6 @@
 """Score-perfomance retrieval task."""  # noqa: N999
 from symurbench.abstract_tasks.retrieval_task import RetrievalTask
 from symurbench.constant import get_default_metadata_path
-from symurbench.metaloaders.metaloader_retrieval import RetrievalMetaLoader
 from symurbench.metrics.retrieval_scorer import RetrievalScorer
 from symurbench.metrics.scorer import BaseScorer
 
@@ -11,7 +10,6 @@ class ScorePerformanceRetrievalASAP(RetrievalTask):
 
     name = "ScorePerformanceRetrievalASAP"
     description = "Score-performance retrieval. ASAP Dataset."
-    metaloader = RetrievalMetaLoader
 
     def __init__(
         self,
@@ -35,8 +33,8 @@ class ScorePerformanceRetrievalASAP(RetrievalTask):
             scorer (BaseScorer | None, optional):
                 scorer to use for metrics calculation. Defaults to None.
             postfixes (tuple[str, str], optional):
-                postfixes to use in names of retrieval metrics.
-                Defaults to ("sp", "ps").
+                Postfixes to use in the names of retrieval metrics,
+                representing retrieval direction. Defaults to ("sp", "ps").
         """
         if scorer is None:
             scorer = RetrievalScorer()

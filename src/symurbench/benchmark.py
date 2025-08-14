@@ -1,8 +1,9 @@
 """Benchmark class implementtion."""
 import logging
+import sys
+
 import numpy as np
 import pandas as pd
-import sys
 import torch
 
 from . import utils
@@ -13,7 +14,26 @@ from .constant import NUM_THREADS, SEED
 from .feature_extractor import FeatureExtractor, PersistentFeatureExtractor
 from .tasks import *  # noqa: F403
 
-def setup_logging(level=logging.INFO):
+
+def setup_logging(
+    level: int = logging.INFO
+) -> None:
+    """Configure logging with a standardized format and handler.
+
+    Sets up the root logger with a stream handler that outputs to stdout.
+    Applies a consistent format including time, log level, and message.
+    Ensures clean setup by removing any existing handlers to prevent duplicates.
+
+    Args:
+        level (int, optional): The minimum logging level to display for the handler.
+            Defaults to `logging.INFO`.
+
+    Note:
+        - The root logger is set to `DEBUG` level to capture all messages,
+          while the handler filters based on the provided `level`.
+        - Propagation is enabled for the 'lightautoml' logger to ensure
+          logs are handled correctly.
+    """
     # clean up any existing handlers
     logging.getLogger().handlers.clear()
     logging.getLogger().setLevel(logging.DEBUG)
@@ -21,10 +41,10 @@ def setup_logging(level=logging.INFO):
     # avoid duplicate logs
     logging.getLogger("lightautoml").propagate = True
 
-    #formatter
+    # formatter
     formatter = logging.Formatter(
         fmt="[%(asctime)s] %(levelname)-7s | %(message)s",
-        datefmt='%H:%M:%S'
+        datefmt="%H:%M:%S"
     )
 
     # handler
@@ -42,22 +62,21 @@ torch.manual_seed(SEED)
 torch.set_num_threads(NUM_THREADS)
 
 class Benchmark:
-    """Class for benchmarking different feature extractors."""
-
+    """Main class for benchmarking different feature extractors."""
     def __init__(
         self,
         feature_extractors_list: list[FeatureExtractor | PersistentFeatureExtractor],
         tasks: list[str] | list[AbsTask] | None = None,
     ) -> None:
-        """
-        Initialize benchmark.
+        """Initialize the benchmark for comparing feature extractors.
 
         Args:
             feature_extractors_list (list[FeatureExtractor|PersistentFeatureExtractor]):
-                list with FeatureExtractor or PersistentFeatureExtractor
-                objects to compare.
-            tasks (list[str] | list[AbsTask] | None):
-                list of task names or list of task objects.
+                List of feature extractor instances to benchmark.
+                Can include both regular and persistent (cached) extractors.
+            tasks (list[str] | list[AbsTask] | None, optional):
+                List of task names (as strings) or pre-instantiated task objects
+                to evaluate on. If None, a default set of tasks may be used.
                 Defaults to None.
         """
         self.feature_extractors = feature_extractors_list
@@ -74,19 +93,19 @@ class Benchmark:
         self,
         tasks: list[str] | list[AbsTask] | None,
     ) -> list[AbsTask]:
-        """
-        Check if tasks argument is valid.
+        """Validate the tasks argument.
 
         Args:
             tasks (list[str] | list[AbsTask] | None):
-                list of task names or list of task instances
-        Raises:
-            TypeError: `tasks` is not a list or len(tasks) == 0
-            TypeError: `tasks` elements have wrong types
-            ValueError: names of the tasks are not unique
+                List of task names (strings) or pre-instantiated task objects.
 
         Returns:
-            list[AbsTask]: list of task instances
+            list[AbsTask]: List of instantiated task objects.
+
+        Raises:
+            TypeError: If `tasks` is not a list, is empty, or contains elements
+                that are neither strings nor instances of AbsTask.
+            ValueError: If task names are not unique (case-sensitive).
         """
         if tasks is None:
             return self.__class__.get_tasks(
@@ -126,15 +145,13 @@ class Benchmark:
     def validate_feature_extractors(
         self,
     ) -> None:
-        """
-        Check if feature_extractors_list argument is valid.
+        """Validate the feature extractors list.
 
         Raises:
-            TypeError: `self.feature_extractors` is not a list
-                or len(self.feature_extractors) == 0
-                or `self.feature_extractors` contains elements of wrong types.
-            ValueError: names of feature extractors in `self.feature_extractors`
-                are not unique.
+            TypeError: If `self.feature_extractors` is not a list, is empty,
+                or contains elements    that are not instances of FeatureExtractor
+                or PersistentFeatureExtractor.
+            ValueError: If the names of the feature extractors are not unique.
         """
         if not isinstance(self.feature_extractors, list)\
         or len(self.feature_extractors) == 0\
@@ -159,7 +176,7 @@ class Benchmark:
         """Get names of all loaded tasks.
 
         Returns:
-            list[str]: list with task names
+            list[str]: List of task names.
         """
         return [t.name for t in self.tasks]
 
@@ -169,19 +186,18 @@ class Benchmark:
         task_names: list[str] | None,
         init_tasks: bool = True
     ) -> list[ClassificationTask | RetrievalTask]:
-        """
-        Load and initialize tasks.
+        """Load and initialize tasks.
 
         Args:
-            task_names (list[str] | None): list of tasks names to load
-            init_tasks (bool, optional):
-                flag, if True, function returns list of objects,
-                if False, function returns list of classes.
-                Defaults to True.
+            task_names (list[str] | None): List of task names to load.
+                If None, all available tasks are loaded.
+            init_tasks (bool, optional): If True, returns initialized task objects.
+                If False, returns task classes without instantiation. Defaults to True.
 
         Returns:
             list[ClassificationTask | RetrievalTask]:
-                list of task objects or list of task classes
+                List of task objects (if `init_tasks` is True)
+                or task classes (if `init_tasks` is False).
         """
         tasks_lvl_1 = AbsTask.__subclasses__()
         tasks_lvl_2 = []
@@ -203,27 +219,27 @@ class Benchmark:
         feature_extractors_list: list[FeatureExtractor | PersistentFeatureExtractor],
         tasks_config: dict
     ) -> None:
-        """
-        Initialize benchmark from config.
+        """Initialize the benchmark from a configuration dictionary.
 
         Args:
             feature_extractors_list (list[FeatureExtractor|PersistentFeatureExtractor]):
-                list with FeatureExtractor and/or PersistentFeatureExtractor objects
-                to compare
+                List of feature extractor instances (regular or persistent) to compare.
             tasks_config (dict):
-                dict with config.
-                Config has the following structure:
-                1) key - task name;
-                2) value - dict with arguments for task name.
-
-                Config arguments include:
-                1) arguments for MetaLoader;
-                2) arguments for __init__() method of the class
-
-                Example of config can be found in configs/tasks_config.yaml
+                Configuration dictionary specifying tasks and their parameters.
+                Structure:
+                - Key: task name (str)
+                - Value: dict containing:
+                1) Arguments for MetaLoader (e.g., `metadata_csv_path`)
+                2) Additional arguments for the task's `__init__` method
+                Example configuration can be found in
+                symurbench.constant.DATASETS_CONFIG_PATH file.
 
         Returns:
-            Benchmark class instance object
+            Benchmark: An initialized Benchmark instance configured with the provided
+                feature extractors and tasks.
+
+        Raises:
+            ValueError: If `tasks_config` is empty or invalid.
         """
         if {isinstance(task, str) for task in tasks_config} != {True}:
             msg = "Argument 'tasks_config' should be a list "\
@@ -246,25 +262,26 @@ class Benchmark:
         feature_extractors_list: list[FeatureExtractor | PersistentFeatureExtractor],
         tasks_config_path: str
     ) -> None:
-        """
-        Initialize benchmark from YAML config file.
+        """Initialize the benchmark from a YAML configuration file.
 
         Args:
             feature_extractors_list (list[FeatureExtractor|PersistentFeatureExtractor]):
-                list with FeatureExtractor and/or PersistentFeatureExtractor
-                objects to compare
-            tasks_config_path (str): path to YAML file with config.
+                List of feature extractor instances (regular or persistent) to compare.
+            tasks_config_path (str):
+                Path to the YAML file containing the task configuration.
                 Config has the following structure:
-                1) key - task name;
-                2) value - dict with arguments for task name.
+                - Key: task name (str)
+                - Value: dict containing:
+                1) Arguments for MetaLoader (e.g., `metadata_csv_path`)
+                2) Additional arguments for the task's `__init__` method
+                Example configuration can be found in
+                symurbench.constant.DATASETS_CONFIG_PATH file.
 
-                Config arguments include:
-                1) arguments for MetaLoader;
-                2) arguments for __init__() method of the class
+        Returns:
+            Benchmark: An initialized Benchmark instance.
 
-                Example of config can be found in configs/tasks_config.yaml
         Raises:
-            ValueError: if config is empty
+            ValueError: If the config is empty.
         """
         config = utils.load_yaml(tasks_config_path)
         if len(config) == 0:
@@ -281,22 +298,26 @@ class Benchmark:
         task: ClassificationTask | RetrievalTask,
         feature_extractor: FeatureExtractor | PersistentFeatureExtractor
     ) -> None:
-        """
-        Run single task for feature extractor.
+        """Run a single task using the specified feature extractor.
 
-        Save calculated metrics.
+        Executes the given task with the provided feature extractor
+        and saves the calculated metrics.
 
         Args:
-            task (ClassificationTask  |  RetrievalTask]): task to run
-            feature_extractor (FeatureExtractor  |  PersistentFeatureExtractor]):
-                feature extractor to evaluate
+            task (ClassificationTask | RetrievalTask): The task to execute.
+            feature_extractor (FeatureExtractor | PersistentFeatureExtractor):
+                The feature extractor to evaluate on the task.
         """
         self.metrics[task.name][feature_extractor.name] = task.run(feature_extractor)
 
     def run_all_tasks(
         self
     ) -> None:
-        """Run all tasks for all feature extractor objects."""
+        """Run all configured tasks for each feature extractor.
+
+        Executes every task in the benchmark on every feature extractor in the list,
+        computing and storing performance metrics for each combination.
+        """
         for feature_extractor in self.feature_extractors:
             msg_log = f"Running tasks for {feature_extractor.name} features."
             logger.info(msg_log)
@@ -312,26 +333,32 @@ class Benchmark:
         return_ci: bool = False,
         alpha: float = 0.05
     ) -> dict:
-        """
-        Aggregate self.metrics into a human-readable dict.
+        """Aggregate metrics into a human-readable dictionary.
 
         Args:
             round_num (int, optional):
-                The number of decimals to use when rounding the number.
+                Number of decimal places to use when rounding metric values.
                 Defaults to 2.
             return_ci (bool, optional):
-                If True, the confidence interval is returned, otherwise
-                the aggregated value is returned. Defaults to False.
-            alpha (float, optional): the significance level
-                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
+                If True, returns the confidence interval (e.g., "0.85 ± 0.02")
+                as a string. If False, returns the aggregated numeric value.
+                Defaults to False.
+            alpha (float, optional):
+                Significance level for calculating the margin of error
+                in confidence intervals. Supported values are 0.05, 0.01, and 0.001.
                 Defaults to 0.05.
 
         Returns:
-            dict: dict with the following structure:
-                {"task name":
-                {"feature extractor name":
-                {"metric name": metric value}
-                }}
+            dict: Nested dictionary with the following structure:
+                {
+                    "task_name": {
+                        "feature_extractor_name": {
+                            "metric_name": metric_value
+                        }
+                    }
+                }
+                Metric values are either floats/ints (if `return_ci=False`)
+                or strings (if `return_ci=True`).
         """
         traversal_list = utils.nested_dict_to_list(self.metrics)
         result_dict = {}
@@ -358,22 +385,27 @@ class Benchmark:
         return_ci: bool = False,
         alpha: float = 0.05
     ) -> pd.DataFrame:
-        """
-        Aggregate self.metrics into a pandas.DataFrame.
+        """Aggregate metrics into a pandas DataFrame.
 
         Args:
             round_num (int, optional):
-                The number of decimals to use when rounding the number.
+                Number of decimal places to use when rounding metric values.
                 Defaults to 2.
             return_ci (bool, optional):
-                If True, the confidence interval is returned, otherwise
-                the aggregated value is returned. Defaults to False.
-            alpha (float, optional): the significance level
-                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
+                If True, returns confidence intervals (e.g., "0.85 ± 0.02")
+                as strings. If False, returns aggregated numeric values.
+                Defaults to False.
+            alpha (float, optional):
+                Significance level for calculating the margin of error
+                in confidence intervals. Supported values are 0.05, 0.01, and 0.001.
                 Defaults to 0.05.
 
         Returns:
-            pd.DataFrame: pd.DataFrame with calculated metrics
+            pd.DataFrame: DataFrame with metrics structured such that:
+                - Rows correspond to feature extractors
+                - Columns correspond to tasks and metrics
+                - Each cell contains the metric value
+                (numeric or string based on `return_ci`)
         """
         traversal_list = utils.nested_dict_to_list(
             self.get_result_dict(
@@ -403,22 +435,26 @@ class Benchmark:
         alpha: float = 0.05,
         colored: bool = True
     ) -> None:
-        """
-        Display dataframe with calculated metrics in HTML format.
+        """Display the calculated metrics DataFrame in HTML format.
+
+        Renders the metrics table as HTML, optionally with color
+        highlighting for best and worst values.
 
         Args:
             round_num (int, optional):
-                The number of decimals to use when rounding the number.
+                Number of decimal places to use when rounding metric values.
                 Defaults to 2.
             return_ci (bool, optional):
-                If True, the confidence interval is returned, otherwise
-                the aggregated value is returned. Defaults to False.
-            alpha (float, optional): the significance level
-                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
+                If True, displays confidence intervals (e.g., "0.85 ± 0.02")
+                as strings. If False, shows aggregated numeric values.
+                Defaults to False.
+            alpha (float, optional):
+                Significance level for calculating the margin of error
+                in confidence intervals. Supported values are 0.05, 0.01, and 0.001.
                 Defaults to 0.05.
             colored (bool, optional):
-                If True, highlight the best values with green color
-                and the worst values with red color.
+                If True, applies color styling to highlight the best values
+                in green and the worst values in red for each metric.
                 Defaults to True.
         """
         df = self.get_result_df(

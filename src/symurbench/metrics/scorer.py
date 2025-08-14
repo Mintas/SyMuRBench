@@ -7,10 +7,11 @@ from .metric_value import MetricValue
 
 
 class BaseScorer(ABC):
-    """
-    Abstract base class for calculating classification metrics.
+    """Abstract base class for calculating classification metrics.
 
-    Subclasses must implement the `calculate_metrics` method.
+    This class defines a common interface for classification metric calculators.
+    Subclasses must implement the `calculate_metrics` method to provide specific
+    metric computation logic.
     """
 
     @abstractmethod
@@ -19,22 +20,21 @@ class BaseScorer(ABC):
         y_true: list | np.ndarray,
         preds: list | np.ndarray,
     ) -> list[MetricValue]:
-        """
-        Calculate metrics for the task.
+        """Calculate classification metrics for the given predictions.
 
         Args:
-            y_true (list | np.ndarray):
-                list or np.array with true values (e.g. class indices).
-                Floats or integers.
+            y_true (list | np.ndarray): True labels or target values.
+                Can be integers or floats.
             preds (list | np.ndarray):
-                list or np.array with predicted values. (e.g. probabilities).
-                Floats or integers.
-
-        Raises:
-            NotImplementedError
+                Predicted values, such as class probabilities, logits,
+                or predicted class indices. Should be floats or integers.
 
         Returns:
-            list[MetricValue]: List of MetricValue objects (for each calculated metric).
-                Each object should have unique name.
+            list[MetricValue]:
+                List of MetricValue objects, each representing a computed metric
+                (e.g., accuracy, F1-score). Each object has a unique name.
+
+        Raises:
+            NotImplementedError: If the method is not overridden by a subclass.
         """
         raise NotImplementedError

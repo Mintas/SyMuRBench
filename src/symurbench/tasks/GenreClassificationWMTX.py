@@ -1,7 +1,6 @@
 """Genre classification task."""  # noqa: N999
 from symurbench.abstract_tasks.classification_task import ClassificationTask
 from symurbench.constant import DEFAULT_LAML_CONFIG_PATHS, get_default_metadata_path
-from symurbench.metaloaders.metaloader_multiclass import MulticlassMetaLoader
 from symurbench.metrics.scorer import BaseScorer
 from symurbench.metrics.sklearn_scorer import SklearnClsScorer
 
@@ -11,7 +10,6 @@ class GenreClassificationWMTX(ClassificationTask):
 
     name = "GenreClassificationWMTX"
     description = "Genre classification. WikiMT-X Dataset."
-    metaloader = MulticlassMetaLoader
 
     def __init__(
         self,
@@ -32,11 +30,14 @@ class GenreClassificationWMTX(ClassificationTask):
                 Absolute path to the directory containing dataset files.
                 - dataset_filter_list (list[str], optional):
                 List of filenames to include (inclusion filter).
+                If not provided, all files are used.
             automl_config_path (str, optional):
-                path to config for AutoML.
+                Path to the AutoML configuration file.
                 Defaults to DEFAULT_LAML_CONFIG_PATHS["multiclass"].
             scorer (BaseScorer | None, optional):
-                scorer to use for metrics calculation. Defaults to None.
+                Scorer instance to use for metric calculation.
+                If None, a default scorer may be used based on the task type.
+                Defaults to None.
         """
         if scorer is None:
             scorer = SklearnClsScorer(task_type="multiclass")

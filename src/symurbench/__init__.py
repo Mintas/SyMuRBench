@@ -3,17 +3,12 @@ from . import (
     benchmark,
     constant,
     feature_extractor,
+    metaloader,
     music21_extractor,
     retrieval,
     utils,
 )
 from .abstract_tasks import abstask, classification_task, retrieval_task
-from .metaloaders import (
-    metaloader,
-    metaloader_multiclass,
-    metaloader_multilabel,
-    metaloader_retrieval,
-)
 from .metrics import metric_value, retrieval_scorer, scorer, sklearn_scorer
 from .tasks import (
     ComposerClassificationASAP,
@@ -35,11 +30,7 @@ __all__ = [
     "abstask",
     "classification_task",
     "retrieval_task",
-    # Metaloaders
     "metaloader",
-    "metaloader_multiclass",
-    "metaloader_multilabel",
-    "metaloader_retrieval",
     "metric_value",
     # Scorers
     "scorer",

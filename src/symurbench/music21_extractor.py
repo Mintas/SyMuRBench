@@ -25,18 +25,17 @@ class Music21Extractor(FeatureExtractor):
         fast: bool = True,
         preprocess_features: bool = True,
     ) -> None:
-        """
-        Initialize the Music21Extractor class.
+        """Initialize the Music21Extractor class.
 
         Args:
-            extractor_name (str): Name of the feature extractor. Should be unique.
-            fast (bool, optional):
-                if True, will use multiprocessing to extract features.
+            extractor_name (str): Name of the feature extractor.
+                Must be unique to identify this extractor in benchmark results.
+            fast (bool, optional): If True, enables multiprocessing to extract features
+                from multiple files in parallel for improved performance.
                 Defaults to False.
-            preprocess_features (bool, optional):
-                whether to preprocess features for tasks with AutoML.
-                If True, preprocess features according to automl config.
-                If False, use features as they are.
+            preprocess_features (bool, optional): If True, features will be preprocessed
+                according to the AutoML configuration before being used in tasks.
+                If False, raw extracted features are used without modification.
                 Defaults to True.
         """
         super().__init__(extractor_name, fast, preprocess_features)
@@ -45,18 +44,17 @@ class Music21Extractor(FeatureExtractor):
         self,
         file: str
     ) -> np.ndarray:
-        """
-        Extract all music21 features from MIDI file.
+        """Extract music21-based features from a MIDI file.
 
         Args:
-            file (str): relative path to MIDI file
-
-        Raises:
-            ValueError: if an error occurred while extracting features from the file.
+            file (str): Relative or absolute path to the MIDI file.
 
         Returns:
-            np.ndarray:
-                numpy array with shape (n_features,) with extracted music21 features
+            np.ndarray: 1D numpy array of shape (n_features,)
+                containing the extracted music21 features.
+
+        Raises:
+            ValueError: If the file cannot be parsed or feature extraction fails.
         """
         try:
             features = allFeaturesAsList(file)

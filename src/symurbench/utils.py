@@ -21,18 +21,40 @@ def embs_and_labels_to_df(
     labels: np.ndarray
 ) -> pd.DataFrame:
     """
-    Concatenate embeddings and labels. Return DataFrame.
+    Concatenate embeddings and labels into a single DataFrame.
+
+    Combines a DataFrame of embeddings (features) with a numpy array of labels along
+    the column axis, producing a unified DataFrame for use in downstream tasks.
 
     Args:
-        embeddings (pd.DataFrame): DataFrame with features (int or float)
-        labels (np.ndarray): numpy array with labels (int)
+        embeddings (pd.DataFrame):
+            DataFrame of shape (n_samples, n_features) containing feature vectors.
+            Values should be numeric (int or float).
+        labels (np.ndarray):
+            Array of shape (n_samples,) for single-label (e.g., multiclass) tasks or
+            (n_samples, n_targets) for multi-label tasks. Values should be integers.
 
     Returns:
-        pd.DataFrame: DataFrame with embeddings and labels.
-        example of column names for multiclass task:
-        `|E_0|E_1|E_2|...|target|`
-        example of column names for multiclass task:
-        `|E_0|E_1|E_2|...|target_0|target_1|...|`
+        pd.DataFrame:
+            Combined DataFrame of shape (n_samples, n_features + n_label_columns) with:
+            - Feature columns: `E_0`, `E_1`, ..., `E_n`
+            - Label columns: `target` (for multiclass) or
+            `target_0`, `target_1`, ... (for multilabel)
+
+    Example:
+        For a multiclass task:
+        ```
+        | E_0 | E_1 | E_2 | target |
+        |-----|-----|-----|--------|
+        | 0.1 | 1.3 | 2.2 |   0    |
+        ```
+
+        For a multilabel task:
+        ```
+        | E_0 | E_1 | E_2 | target_0 | target_1 |
+        |-----|-----|-----|----------|----------|
+        | 0.1 | 1.3 | 2.2 |    1     |    0     |
+        ```
     """
     embeddings.columns = [f"E_{i}" for i in range(embeddings.shape[1])]
 
@@ -51,13 +73,14 @@ def validate_file_paths(
     file_paths: list[str]
 ) -> None:
     """
-    Validate if all file paths exist.
+    Validate that all file paths in the given list exist.
 
     Args:
-        file_paths (list[str]): list of file paths.
+        file_paths (list[str]):
+            List of absolute or relative file paths to validate.
 
     Raises:
-        ValueError: If any file path does not exist.
+        ValueError: If any of the file paths does not exist.
     """
     for file_path in file_paths:
         if not Path.exists(Path(file_path)):
@@ -69,17 +92,17 @@ def load_yaml(
     yaml_path: str
 ) -> dict:
     """
-    Load data from YAML file.
+    Load data from a YAML file.
 
     Args:
-        yaml_path (str): path to file
+        yaml_path (str): Path to the YAML file to load. Can be absolute or relative.
 
     Returns:
-        dict: loaded data
+        dict: Dictionary containing the parsed YAML data.
     """
     if not Path.exists(Path(yaml_path)):
         msg = "YAML file does not exists."
-        raise ValueError(msg)
+        raise FileNotFoundError(msg)
 
     with Path.open(Path(yaml_path)) as file:
         return yaml.safe_load(file)
@@ -89,20 +112,28 @@ def highlight_values(
     good: bool,
     ci: bool=False
 ) -> list[str]:
-    """Highlight values in dataframe.
+    """Apply background color highlighting to a pandas Series based on values.
+
+    Highlights the best or worst values in a Series using green (good) or red (bad)
+    background colors. Designed for use with DataFrame styling in Jupyter notebooks
+    or HTML output.
 
     Args:
-        s (pd.Series): dataframe column
-        good (bool):
-            If True, highlight good values with green color,
-            otherwise highlight poor values with red color
-        ci (bool, optional):
-            If True, cell values are considered as strings in format `0.05 ± 0.01`,
-            else cell values are considered as floats.
-            Defaults to False.
+        s (pd.Series): Series representing a column of metric values to highlight.
+        good (bool): If True, highlights the best-performing values in green.
+            If False, highlights the worst-performing values in red.
+        ci (bool, optional): If True, interprets values as strings in the format
+            "value ± error" (e.g., "0.85 ± 0.02") and extracts the numeric value
+            before comparison. If False, treats values as floats. Defaults to False.
 
     Returns:
-        list[str]: list with bg colors
+        list[str]: List of CSS background color strings for each element in the Series:
+            - "background: forestgreen" for top-performing values when `good=True`
+            - "background: firebrick" for worst-performing values when `good=False`
+
+    Note:
+        The decision of which metrics are "better" when maximized or minimized
+        is determined by `DEFAULT_METRIC_NAMES_2MINIMIZE`.
     """
     vals = np.array([float(v.split(" ")[0]) for v in s._values]) if ci else s._values
 
@@ -121,21 +152,26 @@ def display_styler(
     ci: bool=False,
     colored: bool=True
 ) -> pifs.Styler:
-    """
-    Display Styler object.
+    """Create a styled DataFrame for displaying evaluation metrics.
 
     Args:
-        df (pd.DataFrame): DataFrame with metrics to display
-        round_num (int):
-            The number of decimals to use when rounding the number.
+        df (pd.DataFrame): DataFrame containing evaluation metrics to display.
+        round_num (int, optional):
+            Number of decimal places to use when formatting numeric values.
             Defaults to 2.
         ci (bool, optional):
-            If True, cell values are considered as strings in format `0.05 ± 0.01`,
-            else cell values are considered as floats.
-            Defaults to False.
-        colored (bool):
-            flag responsible for highlighting the Best/Worst metrics.
+            If True, interprets cell values as strings in the format "value ± error"
+            (e.g., "0.85 ± 0.02") and formats accordingly. If False, treats values as
+            plain floats. Defaults to False.
+        colored (bool, optional): If True, applies color styling:
+            - Best values are highlighted in green (forestgreen)
+            - Worst values are highlighted in red (firebrick)
+            The direction (higher=better or lower=better) is determined by
+            `DEFAULT_METRIC_NAMES_2MINIMIZE`.
             Defaults to True.
+
+    Returns:
+        pandas.io.formats.style.Styler: A Styler object with applied formatting
     """
     styler = df.style
 
@@ -172,14 +208,21 @@ def display_styler(
     return styler
 
 def nested_dict_to_list(x: dict) -> list:
-    """
-    Recursively traverse a dict to get list of leaf nodes.
+    """Convert a nested dictionary into a flat list of leaf nodes with their full paths.
+
+    Recursively traverses a nested dictionary and returns a list of tuples,
+    where each tuple contains the full path to a leaf node (including the final key)
+    and its associated value.
+
+    A leaf node is defined as a key-value pair where the value is not a dictionary.
 
     Args:
-        x (dict): dict for traversal
+        x (dict): The nested dictionary to flatten. Must be a non-empty dictionary.
 
     Returns:
-        list: list containing tuples with leaf nodes and paths to them
+        list[tuple]: A list of tuples in the form (*path_keys, value), where:
+            - `path_keys` are the nested keys leading to the leaf
+            - `value` is the leaf node value
     """
     result = []
     def traverse(current_dict: dict, path: list) -> None:
@@ -196,21 +239,24 @@ def load_datasets(
     load_features: bool = True,
     token: str | None = None
 ) -> None:
-    """
-    Download and extract datasets and precomputed features from Hugging Face Hub.
+    """Download and extract datasets and precomputed features from Hugging Face Hub.
 
-    This function:
-    - Downloads a zip archive containing dataset metadata and structure.
-    - Extracts it to the specified output folder.
-    - Optionally downloads and saves precomputed music21 and jSymbolic features.
-    - Updates the local datasets configuration file with resolved absolute paths.
+    This function automates the setup of the dataset environment by:
+    1. Downloading a zip archive containing dataset metadata and structure from HF.
+    2. Extracting it to the specified output directory.
+    3. Optionally downloading precomputed feature files (music21 and jSymbolic).
+    4. Updating the local configuration file with absolute paths to the extracted data.
+
+    The resulting directory structure supports immediate use in benchmarking tasks.
 
     Args:
-        output_folder (str | Path, optional): Directory where datasets and features
+        output_folder (str | Path, optional): Root directory where datasets and features
             will be extracted. Created if it does not exist. Defaults to "./".
-        load_features (bool, optional): Whether to download and save precomputed
-            feature files (music21 and jSymbolic). Defaults to True.
-        token (str, optional): Authentication token for accessing private or gated
+        load_features (bool, optional): If True, downloads and saves precomputed
+            music21 and jSymbolic feature files. If False, only metadata is downloaded.
+            Defaults to True.
+        token (str | None, optional):
+            Authentication token for accessing private or gated
             repositories on Hugging Face Hub. Defaults to None.
     """
     datasets = hf_hub_download(

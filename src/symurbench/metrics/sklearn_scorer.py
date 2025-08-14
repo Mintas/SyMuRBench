@@ -24,31 +24,40 @@ CLASSIFICATION_TYPES = [
 ]
 
 class SklearnClsScorer(BaseScorer):
-    """Class for calculating sklearn classificatoin metrics."""
+    """Class for calculating classification metrics using scikit-learn.
 
+    This class provides an implementation of common classification metrics
+    (e.g., accuracy, F1-score) by leveraging the scikit-learn metrics module.
+    It computes a standard set of performance measures based on true labels
+    and predicted values.
+    """
     def __init__(
         self,
         task_type: str,
         metrics_cfg: dict[str, dict] | None = None,
-        treshold: float = 0.5
+        threshold: float = 0.5
     ) -> None:
-        """
-        Initialize the MeanSklearnScorer class.
+        """Initialize the MeanSklearnScorer class.
 
         Args:
-            task_type (str):
-                classification task type.
-                Variants: `multiclass`, `multilabel`
-            metrics_cfg (dict[str, dict], optional):
-                dict with metrics to use.
-            treshold (float, optional):
-                treshold for calculating labels. Defaults to 0.5.
+            task_type (str): Type of classification task. Supported values are:
+                - 'multiclass': for multi-class classification
+                - 'multilabel': for multi-label classification
+            metrics_cfg (dict[str, dict], optional): Configuration dictionary specifying
+                which metrics to compute and their parameters. Defaults to None.
+            threshold (float, optional):
+                Threshold for converting predicted probabilities
+                to multi-label predictions. Defaults to 0.5.
+
+        Raises:
+            ValueError: If `task_type` is not one of ['multiclass', 'multilabel'].
+            ValueError: If `threshold` is not between 0 and 1.
         """
         if task_type not in CLASSIFICATION_TYPES:
             msg = f"{task_type} task type not implemented."
-            raise TypeError(msg)
+            raise ValueError(msg)
 
-        if not 0 < treshold < 1:
+        if not 0 < threshold < 1:
             msg = "Treshold should be more than 0 and less than 1"
             raise ValueError(msg)
 
@@ -57,7 +66,7 @@ class SklearnClsScorer(BaseScorer):
 
         self.task_type = task_type
         self.metrics_cfg = metrics_cfg
-        self.treshold = treshold
+        self.threshold = threshold
 
     def calc_sklearn_score(
         self,
@@ -66,21 +75,23 @@ class SklearnClsScorer(BaseScorer):
         y_true: list | np.ndarray,
         preds: list | np.ndarray
     ) -> float:
-        """
-        Method for calculating sklearn classification metrics.
+        """Calculate a scikit-learn classification metric.
 
         Args:
-            task_name (str): name of the task
-            metric_func_name (str): name of sklearn metrics funciton to use
-            args (dict): dict with arguments for metric_func_name
-            y_true (list | np.ndarray): list or np.array with true labels
-            preds (list | np.ndarray): list or np.array with predicted probabilities
-
-        Raises:
-            ValueError: if self.task_type is incorrect.
+            task_name (str): Name of the classification task.
+            metric_func_name (str): Name of the scikit-learn metrics function to use
+                (e.g., 'f1_score').
+            args (dict):
+                Dictionary of additional arguments to pass to the metric function.
+            y_true (list | np.ndarray): True labels.
+            preds (list | np.ndarray): Predicted probabilities or class labels.
 
         Returns:
-            float: Calculated score
+            float: The computed metric score.
+
+        Raises:
+            ValueError: If `self.task_type` is not supported
+                (i.e., not 'multiclass' or 'multilabel').
         """
         metric_func = getattr(sm, metric_func_name)
         if metric_func_name in FUNCTIONS_WITH_PROB_INPUT:
@@ -88,7 +99,7 @@ class SklearnClsScorer(BaseScorer):
         elif self.task_type == "multiclass":
             y_pred = np.argmax(preds, axis=1)
         elif self.task_type == "multilabel":
-            y_pred = np.where(preds > self.treshold, 1, 0)
+            y_pred = np.where(preds > self.threshold, 1, 0)
         else:
             msg = f"Incorrect task type: {self.task_type}."
             raise TypeError(msg)
@@ -108,20 +119,25 @@ class SklearnClsScorer(BaseScorer):
         y_true: list | np.ndarray,
         preds: list | np.ndarray,
     ) -> list[MetricValue]:
-        """
-        Calculate metrics for the task.
+        """Calculate classification metrics for the given task.
 
         Args:
             y_true (list | np.ndarray):
-                list or np.array with true values (e.g. class indices).
-                Floats or integers.
+                True labels or target values. Can be integers or floats.
+                Must have the same length as `preds`.
             preds (list | np.ndarray):
-                list or np.array with predicted values. (e.g. probabilities).
-                Floats or integers.
+                Predicted values, such as class probabilities, logits,
+                or predicted class indices. Should be floats or integers.
+                Must have the same length as `y_true`.
 
         Returns:
-            list[MetricValue]: List of MetricValue objects (for each calculated metric).
-                Each object should have unique name.
+            list[MetricValue]:
+                List of MetricValue objects, each representing a computed metric
+                (e.g., accuracy, F1-score). Each object has a unique name corresponding
+                to the metric (e.g., 'accuracy', 'f1_score').
+
+        Raises:
+            ValueError: If `y_true` and `preds` have mismatched lengths.
         """
         if len(y_true) != len(preds):
             msg = "y_true and preds array lengths should be equal"

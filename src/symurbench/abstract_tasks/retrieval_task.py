@@ -10,8 +10,7 @@ from .abstask import AbsTask
 
 
 class RetrievalTask(AbsTask):
-    """A class for evaluating FeatureExtractor on a retrieval task."""
-
+    """Evaluator class for assessing the performance on a retrieval task."""
     def __init__(
         self,
         metaloader_args_dict: dict,
@@ -49,18 +48,23 @@ class RetrievalTask(AbsTask):
         postfix: str = ""
     ) -> list[MetricValue]:
         """
-        Calculate retrieval metrics for pair of embedding matrices.
+        Calculate retrieval metrics for a pair of embedding matrices.
 
         Args:
-            features_1 (np.ndarray, float or int):
-                matrix 1 of shape (n_embeddings, embedding_size)
-            features_2 (np.ndarray, float or int):
-                matrix 2 of shape (n_embeddings, embedding_size)
-            postfix (str, optional): postfix to add to metric name.
+            features_1 (np.ndarray):
+                First embedding matrix of shape (n_embeddings, embedding_size).
+                Must contain numeric values (float or int).
+            features_2 (np.ndarray):
+                Second embedding matrix of shape (n_embeddings, embedding_size).
+                Must contain numeric values (float or int).
+            postfix (str, optional):
+                Postfix to append to metric names for identification.
                 Defaults to "".
 
         Returns:
-            list[MetricValue]: Calculated retrieval metrics.
+            list[MetricValue]:
+                A list of `MetricValue` objects, one for each computed metric.
+                Each object has a unique name and the corresponding metric value(s).
         """
         score_matrix = compute_sim_score(features_1, features_2)
         indices = get_ranking(score_matrix)
@@ -81,16 +85,19 @@ class RetrievalTask(AbsTask):
         Calculate metrics for features.
 
         Args:
-            data (pd.DataFrame):
-                dataframe with features
+            data (pd.DataFrame): Input dataframe containing feature columns.
+                The number of rows must be even, as features are expected
+                to be processed in pairs (e.g., for similarity or retrieval tasks).
 
         Raises:
-            ValueError: if data.shape[0] is not an even number
+            ValueError: If the number of rows in `data` is not even
+            (i.e., `data.shape[0]` is odd).
 
         Returns:
             list[MetricValue]:
-                List of MetricValue objects (for each calculated metric).
-                Each object has an unique name.
+                A list of `MetricValue` objects, one for each computed metric.
+                Each object has a unique name (if postfixes are not the same)
+                and the corresponding metric value(s).
         """
         if data.shape[0] % 2 != 0:
             msg = "Number of midi scores and performances should be equal."

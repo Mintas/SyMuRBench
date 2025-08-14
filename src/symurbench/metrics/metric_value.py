@@ -14,21 +14,26 @@ Z_ALPHA_OVER_TWO = {
 }
 
 class MetricValue:
-    """Container for calculated metrics."""
+    """
+    Container for storing and managing calculated evaluation metrics.
+
+    This class holds metric values resulting from the evaluation.
+    It provides a structured way to access, manage, and export metrics
+    for reporting or further analysis.
+    """
     def __init__(
         self,
         name: str,
         values: list[float|int],
         aggregate: str = "mean"
     ) -> None:
-        """
-        Initialize metric values.
+        """Initialize metric values.
 
         Args:
-            name (str): metric name
-            values (list[float | int]): list of values. Cannot be empty.
-            aggregate (str, optional): aggregation type for list of values.
-                Defaults to "mean". All variants: "median", "mean".
+            name (str): Name of the metric.
+            values (list[float | int]): List of metric values. Must not be empty.
+            aggregate (str, optional): Aggregation method for the list of values.
+                Supported values are "mean" and "median". Defaults to "mean".
         """
         self._name = name
         self._values = values
@@ -39,14 +44,22 @@ class MetricValue:
     def values(
         self,
     ) -> list[float|int]:
-        """Raw values."""
+        """Get the raw metric values.
+
+        Returns:
+            list[float | int]: The unaggregated list of metric values.
+        """
         return self._values
 
     @property
     def name(
         self
     ) -> str:
-        """Name."""
+        """Get the name of the metric.
+
+        Returns:
+            str: The name of the metric.
+        """
         return self._name
 
     @name.setter
@@ -54,10 +67,10 @@ class MetricValue:
         self,
         name: str
     ) -> None:
-        """Change self.name to new name.
+        """Set the name of the metric.
 
         Args:
-            name (str): new name
+            name (str): The new name for the metric.
         """
         self._name = name
 
@@ -65,26 +78,24 @@ class MetricValue:
     def is_single_value(
         self
     ) -> bool:
-        """
-        Check number of elements in `self.values`.
+        """Check if the number of elements in `self.values` is exactly one.
 
         Returns:
-            bool: True if `self.values` length equals 1, False otherwise
+            bool: True if the length of `self.values` is 1, False otherwise.
         """
         return len(self._values) == 1
 
     def validate(
         self
     ) -> None:
-        """
-        Validate name, values, and aggregation_type.
+        """Validate the metric's name, values, and aggregation type.
 
         Raises:
-            TypeError: if self._name is not a string
-            TypeError: if self._values is not a list / an empty list
-            TypeError: if self._values contains data types other than int and float
-            ValueError: if self.aggregation_type not in ("mean", "median")
-            ValueError: if self.alpha not in [0.05, 0.01, 0.001]
+            TypeError: If `self._name` is not a string.
+            TypeError: If `self._values` is not a list or is empty.
+            TypeError: If any element in `self._values` is not an int or float.
+            ValueError: If `self.aggregation_type` is not one of {"mean", "median"}.
+            ValueError: If `self.alpha` is not one of [0.05, 0.01, 0.001].
         """
         if not isinstance(self._name, str):
             msg = "Name should be a string."
@@ -110,16 +121,16 @@ class MetricValue:
         self,
         round_num: int = 2
     ) -> float|int:
-        """
-        Return a rounded aggregated value for `self.values`.
+        """Return a rounded aggregated value for `self.values`.
 
         Args:
             round_num (int, optional):
-                The number of decimals to use when rounding the aggregated value.
-                Defaults to 2.
+                Number of decimal places to round to. Defaults to 2.
 
         Returns:
-            float|int: aggregated value
+            float | int:
+                The aggregated value (e.g., mean or median) of the metric values,
+                rounded to the specified number of decimals.
         """
         if self.is_single_value:
             return round(self._values[0], round_num)
@@ -131,20 +142,24 @@ class MetricValue:
         round_num: int = 2,
         alpha: float = 0.05
     ) -> float:
-        """
-        Return a rounded margin of error for `self.values`.
+        """Return a rounded margin of error for `self.values`.
 
         Args:
             round_num (int, optional):
-                The number of decimals to use when rounding the std value.
+                Number of decimal places to round the margin of error to.
                 Defaults to 2.
-            alpha (float, optional): the significance level
-                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
-                Defaults to 0.05.
+            alpha (float, optional):
+                Significance level for confidence interval calculation.
+                Supported values are 0.05, 0.01, and 0.001. Defaults to 0.05.
 
         Returns:
-            float: rounded margin of error for values if `self.values` length > 1
-                else 0.0
+            float:
+                The rounded margin of error if the length of `self.values`
+                is greater than 1;
+                returns 0.0 if there is only one value (no variability).
+
+        Raises:
+            ValueError: If `alpha` is not one of [0.05, 0.01, 0.001].
         """
         if self.is_single_value:
             return 0.0
@@ -164,23 +179,26 @@ class MetricValue:
         round_num: int = 2,
         alpha: float = 0.05
     ) -> str:
-        """
-        Return a rounded confidence interval as a string.
+        """Return a rounded confidence interval as a formatted string.
 
-        Result example: `0.522 ± 0.012`.
-        If there is only one element in `self.values`,
-        only the aggregated value is returned.
+        Example:
+            "0.522 ± 0.012"
+
+        If there is only one value in `self.values`,
+        only the aggregated value is returned (e.g., "0.522").
 
         Args:
-            round_num (int, optional):
-                The number of decimals to use when rounding aggregated value
-                and margin of error. Defaults to 3.
-            alpha (float, optional): the significance level
-                for calculating margin of error. Supported values: 0.05, 0.01, 0.001.
-                Defaults to 0.05.
+            round_num (int, optional): Number of decimal places to use when rounding the
+                aggregated value and margin of error. Defaults to 3.
+            alpha (float, optional):
+                Significance level for calculating the margin of error.
+                Supported values are 0.05, 0.01, and 0.001. Defaults to 0.05.
 
         Returns:
-            str: confidence interval
+            str: Formatted string representing the confidence interval or single value.
+
+        Raises:
+            ValueError: If `alpha` is not one of [0.05, 0.01, 0.001].
         """
         value_as_str = str(self._get_agg_value(round_num))
 
@@ -215,6 +233,33 @@ class MetricValue:
         Returns:
             float|int|str: Aggregated values or confidence interval.
         """
+        """Return a rounded aggregated value or confidence interval.
+
+        This method combines the functionality of `_get_agg_value`
+        and `_get_agg_std_as_str` to provide either a single aggregated value
+        or a formatted confidence interval string.
+
+        Args:
+            round_num (int, optional):
+                Number of decimal places to use when rounding the
+                aggregated value and margin of error. Defaults to 3.
+            return_ci (bool, optional):
+                If True, returns the confidence interval as a string
+                (e.g., "0.522 ± 0.012").
+                If False, returns the aggregated value as a float or int.
+                Defaults to False.
+            alpha (float, optional):
+                Significance level for calculating the margin of error.
+                Supported values are 0.05, 0.01, and 0.001. Defaults to 0.05.
+
+        Returns:
+            float | int | str:
+                The aggregated value (float or int) if `return_ci` is False,
+                otherwise the confidence interval as a string.
+
+        Raises:
+            ValueError: If `alpha` is not one of [0.05, 0.01, 0.001].
+        """
         if return_ci:
             return self._get_ci_as_str(round_num, alpha)
         return self._get_agg_value(round_num)
@@ -223,19 +268,21 @@ class MetricValue:
         self,
         other: None
     ) -> None:
-        """
-        Overload `+` operation.
+        """Overload the `+` operator to combine two MetricValue objects.
 
-        The aggregation type is set equal to the aggregation type of the first operand.
+        The aggregation type of the resulting object is set to that
+        of the first operand.
+        Both objects must have the same metric name.
 
         Args:
-            other (MetricValue): MetricValue object. Should have the same name.
-
-        Raises:
-            ValueError: if object names differ.
+            other (MetricValue): Another MetricValue object to add.
+                Must have the same name.
 
         Returns:
-            MetricValue: Union of MetricValue objects
+            MetricValue: A new MetricValue object containing the combined values.
+
+        Raises:
+            ValueError: If the metric names of `self` and `other` do not match.
         """
         if self.name != other.name:
             msg = "Only identical metrics can be added together."

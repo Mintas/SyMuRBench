@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 
 from symurbench.feature_extractor import FeatureExtractor, PersistentFeatureExtractor
-from symurbench.metaloaders.metaloader import BaseMetaLoader
+from symurbench.metaloader import BaseMetaLoader
 from symurbench.metrics.metric_value import MetricValue
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ class AbsTask(ABC):
     """
     name: str
     description: str = ""
-    metaloader: BaseMetaLoader
+    metaloader: BaseMetaLoader = BaseMetaLoader
 
     def __init__(
         self,
