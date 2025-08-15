@@ -1,4 +1,12 @@
-# SyMuRBench: Benchmark for Symbolic Music Representations
+<p align="center">
+  <img width="300" src="docs/assets/logo.jpg"/>
+</p>
+
+<h1 align="center"><i>SyMuRBench</i></h1>
+<p align="center"><i>Benchmark for Symbolic Music Representations</i></p>
+<img alt="Dynamic TOML Badge" src="https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FMintas%2FSyMuRBench%2Frefs%2Fheads%2Fmain%2Fpyproject.toml&query=version&label=pypi%20package">
+<img alt="GitHub License" src="https://img.shields.io/github/license/Mintas/SyMuRBench">
+
 
 ## 1. Overview
 
@@ -85,6 +93,10 @@ benchmark.display_result(return_ci=True, alpha=0.05)
 ```
 
 > **Tip**: If tasks is omitted, all available tasks will be run by default.
+
+*Output Example*
+
+![output](docs/assets/example.png?raw=true "")
 
 
 **Example 2: Using a Configuration Dictionary**
