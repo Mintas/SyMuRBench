@@ -7,7 +7,7 @@ allow-direct-references = true
 
 [project]
 name = "symurbench"
-version = "0.0.1.1"
+version = "0.0.1"
 description = "SyMuRBench: Benchmark for symbolic music representations"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {file = "LICENSE"}
