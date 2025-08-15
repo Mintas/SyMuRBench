@@ -168,8 +168,12 @@ m21_pfe = PersistentFeatureExtractor(
     name="music21"
 )
 
-benchmark = Benchmark.init_from_config_file(
-    feature_extractors_list=[m21_pfe]
+benchmark = Benchmark(
+    feature_extractors_list=[m21_pfe],
+    tasks=[
+        "ComposerClassificationASAP",
+        "ScorePerformanceRetrievalASAP"
+    ]
 )
 benchmark.run_all_tasks()
 results_df = benchmark.get_result_df(round_num=3, return_ci=True)
