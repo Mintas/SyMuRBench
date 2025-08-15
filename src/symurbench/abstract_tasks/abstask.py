@@ -19,7 +19,7 @@ class AbsTask(ABC):
 
     To create a custom task, users should:
         - Implement `calculate_metrics` to compute evaluation metrics
-        from features and labels.
+            from features and labels.
         - Implement `run` to execute feature extraction and metric computation.
 
     Args:
@@ -45,11 +45,11 @@ class AbsTask(ABC):
                 Dictionary of arguments passed to the metaloader constructor.
                 Expected keys:
                 - metadata_csv_path (str):
-                Absolute path to the CSV file containing dataset metadata.
+                    Absolute path to the CSV file containing dataset metadata.
                 - files_dir_path (str):
-                Absolute path to the directory containing dataset files.
+                    Absolute path to the directory containing dataset files.
                 - dataset_filter_list (list[str], optional):
-                List of filenames to include (inclusion filter).
+                    List of filenames to include (inclusion filter).
         """
         self.metaloader = self.metaloader(**metaloader_args_dict)
         self.meta_dataset = self.metaloader.load_dataset()

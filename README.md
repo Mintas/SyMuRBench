@@ -1,4 +1,12 @@
-# SyMuRBench: Benchmark for Symbolic Music Representations
+<p align="center">
+  <img width="300" src="docs/assets/logo.jpg"/>
+</p>
+
+<h1 align="center"><i>SyMuRBench</i></h1>
+<p align="center"><i>Benchmark for Symbolic Music Representations</i></p>
+
+[![GitHub Release](https://img.shields.io/github/v/release/Mintas/SyMuRBench)](https://pypi.python.org/pypi/symurbench/)
+[![GitHub License](https://img.shields.io/github/license/Mintas/SyMuRBench)](https://github.com/Mintas/SyMuRBench/blob/main/LICENSE)
 
 ## 1. Overview
 
@@ -85,6 +93,10 @@ benchmark.display_result(return_ci=True, alpha=0.05)
 ```
 
 > **Tip**: If tasks is omitted, all available tasks will be run by default.
+
+*Output Example*
+
+![output](docs/assets/example.png?raw=true "")
 
 
 **Example 2: Using a Configuration Dictionary**

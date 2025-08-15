@@ -92,9 +92,9 @@ def compute_metrics(
     Returns:
         dict: Dictionary containing computed metrics:
             - 'R@r': Recall at rank r (percentage of queries where the correct item
-            appears within top-r).
+                appears within top-r).
             - 'Median_Rank': Median position at which the correct item
-            is retrieved across all queries.
+                is retrieved across all queries.
     """
     num_items = gt_indices.shape[1]
 
@@ -135,7 +135,7 @@ def run_retrieval_from_embeddings(
     Returns:
         dict: Dictionary containing retrieval metrics:
             - 'R@r': Recall at rank r (percentage of queries where the correct match
-            is in the top-r retrieved results).
+                is in the top-r retrieved results).
             - 'Median_Rank': Median rank of the correct match across all queries.
     """
     score_matrix = compute_sim_score(features_1, features_2)
