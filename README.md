@@ -5,7 +5,7 @@
 <h1 align="center"><i>SyMuRBench</i></h1>
 <p align="center"><i>Benchmark for Symbolic Music Representations</i></p>
 
-[![GitHub Release](https://img.shields.io/github/v/release/Mintas/SyMuRBench)](https://pypi.python.org/pypi/symurbench/)
+[![GitHub Tag](https://img.shields.io/github/v/tag/Mintas/SyMuRBench?label=version)](https://pypi.python.org/pypi/symurbench/)
 [![GitHub License](https://img.shields.io/github/license/Mintas/SyMuRBench)](https://github.com/Mintas/SyMuRBench/blob/main/LICENSE)
 
 ## 1. Overview
