@@ -1,0 +1,28 @@
+# here keys are names of the tasks
+ComposerClassificationASAP:
+    metadata_csv_path: datasets/composer_and_retrieval_datasets/metadata_composer_dataset.csv # path to CSV with target labels and filenames
+    files_dir_path: datasets/composer_and_retrieval_datasets/ # path to directory with MIDI files from composer benchmark
+
+ScorePerformanceRetrievalASAP:
+    metadata_csv_path: datasets/composer_and_retrieval_datasets/metadata_retrieval_dataset.csv # path to CSV with scores and perfomances
+    files_dir_path: datasets/composer_and_retrieval_datasets/ # path to directory with MIDI files from retrieval benchmark
+
+GenreClassificationMMD:
+    metadata_csv_path: datasets/genre_dataset/metadata_genre_dataset.csv
+    files_dir_path: datasets/genre_dataset/midis/
+
+GenreClassificationWMTX:
+    metadata_csv_path: datasets/wikimtx_dataset/metadata_wikimtx_dataset.csv
+    files_dir_path: datasets/wikimtx_dataset/midis/
+
+EmotionClassificationEMOPIA:
+    metadata_csv_path: datasets/emopia_dataset/metadata_emopia_dataset.csv
+    files_dir_path: datasets/emopia_dataset/midis/
+
+EmotionClassificationMIREX:
+    metadata_csv_path: datasets/mirex_dataset/metadata_mirex_dataset.csv
+    files_dir_path: datasets/mirex_dataset/midis/
+
+InstrumentDetectionMMD:
+    metadata_csv_path: datasets/instrument_dataset/metadata_instrument_dataset.csv
+    files_dir_path: datasets/instrument_dataset/midis/

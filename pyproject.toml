@@ -1,21 +1,20 @@
 [build-system]
-requires = ["hatchling", "hatch-requirements-txt"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
-# TODO : verify this approach, or try dynamic dependencies import...
 allow-direct-references = true
 
 [project]
 name = "symurbench"
-version = "0.1"
+version = "0.0.1.1"
 description = "SyMuRBench: Benchmark for symbolic music representations"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {file = "LICENSE"}
 requires-python = ">=3.10.0"
 authors = [
-    { name = "PStrepetov" },
-    { name = "DAKovalev" }
+    {name = "Peter Strepetov" },
+    {name = "Dmitrii Kovalev" }
 ]
 keywords = [
     "artificial intelligence",
@@ -38,21 +37,22 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
 ]
-
-dynamic = ["dependencies"]
-#dependencies = []
-
-[tool.hatch.metadata.hooks.requirements_txt]
-files = ["symurbench/requirements.txt"]
+dependencies = [
+    "scikit-learn",
+    "pandas",
+    "numpy>=1.22, <2.0.0",
+    "LightAutoML==0.4.1",
+    "tqdm",
+    "music21==9.1.0",
+    "pyarrow"
+]
 
 [tool.hatch.build.targets.wheel]
-packages = ["symurbench"]
+packages = ["src/symurbench"]
 
 [project.optional-dependencies]
 tests = [
-    "pytest-cov",
-    #"pytest-xdist[psutil]",
-
+    "pytest-cov"
 ]
 docs = [
     "sphinx",
@@ -180,11 +180,4 @@ ignore = [
     "UP038",
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"tests/**" = [
-    "ANN201",  # allow no return type hint for pytest methods
-    "D103",  # no need to document pytest methods
-    "S101",  # allow assertions in tests
-    "T201",  # print allowed
-]
 "docs/conf.py" = ["INP001"]  # not a package
