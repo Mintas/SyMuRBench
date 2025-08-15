@@ -220,9 +220,10 @@ def nested_dict_to_list(x: dict) -> list:
         x (dict): The nested dictionary to flatten. Must be a non-empty dictionary.
 
     Returns:
-        list[tuple]: A list of tuples in the form (*path_keys, value), where:
-            - `path_keys` are the nested keys leading to the leaf
-            - `value` is the leaf node value
+        list[tuple]:
+            A list of tuples in the form (path_keys, value), where:
+                - `path_keys` are the nested keys leading to the leaf
+                - `value` is the leaf node value
     """
     result = []
     def traverse(current_dict: dict, path: list) -> None:

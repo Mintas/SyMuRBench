@@ -180,4 +180,5 @@ ignore = [
     "UP038",
 ]
 
+[tool.ruff.lint.per-file-ignores]
 "docs/conf.py" = ["INP001"]  # not a package

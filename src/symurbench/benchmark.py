@@ -350,13 +350,7 @@ class Benchmark:
 
         Returns:
             dict: Nested dictionary with the following structure:
-                {
-                    "task_name": {
-                        "feature_extractor_name": {
-                            "metric_name": metric_value
-                        }
-                    }
-                }
+                {"task_name": {"feature_extractor_name": {"metric_name": metric_value}}}
                 Metric values are either floats/ints (if `return_ci=False`)
                 or strings (if `return_ci=True`).
         """
@@ -405,7 +399,7 @@ class Benchmark:
                 - Rows correspond to feature extractors
                 - Columns correspond to tasks and metrics
                 - Each cell contains the metric value
-                (numeric or string based on `return_ci`)
+
         """
         traversal_list = utils.nested_dict_to_list(
             self.get_result_dict(
