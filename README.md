@@ -5,7 +5,7 @@
 <h1 align="center"><i>SyMuRBench</i></h1>
 <p align="center"><i>Benchmark for Symbolic Music Representations</i></p>
 
-[![GitHub Release](https://img.shields.io/github/v/release/Mintas/SyMuRBench)](https://pypi.python.org/pypi/symurbench/)
+[![GitHub Tag](https://img.shields.io/github/v/tag/Mintas/SyMuRBench?label=version)](https://pypi.python.org/pypi/symurbench/)
 [![GitHub License](https://img.shields.io/github/license/Mintas/SyMuRBench)](https://github.com/Mintas/SyMuRBench/blob/main/LICENSE)
 
 ## 1. Overview
@@ -53,6 +53,7 @@ load_datasets(
     load_features=True                # Downloads precomputed music21 & jSymbolic features
 )
 ```
+> Note: The datasets are also publicly available on Hugging Face at https://huggingface.co/datasets/ai-forever/symurbench_datasets .
 
 ---
 
@@ -188,7 +189,7 @@ results_df.to_csv("results.csv")
 - 🔒 **Avoid data leakage**: Do not include test-set files in your training data to ensure fair and valid evaluation.
 - 🔄 **Reproducibility**: Use fixed random seeds and consistent preprocessing pipelines to make experiments reproducible.
 - 📁 **File paths**: Ensure paths in config files are correct and accessible.
-- 🧪 **Custom extractors**: You can implement your own `FeatureExtractor` subclass by inheriting from the base `FeatureExtractor` class and implementing the `extract` method.
+- 🧪 **Custom extractors**: You can implement your own `FeatureExtractor` subclass by inheriting from the base `FeatureExtractor` class and implementing the `extract_features_from_file` method.
 
 ## 7. Citation
 
